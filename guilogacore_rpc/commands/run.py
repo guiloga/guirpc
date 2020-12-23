@@ -5,7 +5,7 @@ import sys
 import time
 
 from guilogacore_rpc.amqp.domain.exceptions import ConsumerConfigurationError
-from guilogacore_rpc.amqp.consumers import ProxyReconnectConsumer
+from guilogacore_rpc.amqp.consumer import ProxyReconnectConsumer
 from guilogacore_rpc.amqp.providers import ConsumerConfiguration
 
 LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
@@ -28,7 +28,7 @@ def _set_app_module_to_path(app_file):
 def _import_faas_module():
     global FaaS_MODULE
     FaaS_MODULE = importlib.import_module(
-        f'{APP_MODULE_NAME}.faas')
+        f'{APP_MODULE_NAME}.server')
 
 
 def find_registered_faas(app_file):
@@ -52,11 +52,10 @@ class ConfigININotProvidedError(Exception):
             'or provide it using the "--with-config" option.'
 
 
-def main(*args):
-    with_config = args[0]
+def runconsumer(with_config, **options):
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
-    config_filepath = with_config or os.getenv('CONSUMER_CONFIG_FILEPATH')
+    config_filepath = with_config
     if not config_filepath:
         raise ConfigININotProvidedError
 
@@ -65,15 +64,15 @@ def main(*args):
     except Exception:
         raise ConsumerConfigurationError
 
-    callables = find_registered_faas(cs_conf.faas_app)
+    callables = find_registered_faas(cs_conf.root)
     consumer = ProxyReconnectConsumer(
         faas_callables=callables,
         amqp_url=cs_conf.con_params.amqp_url,
         amqp_entities=cs_conf.amqp_entities,
-        **cs_conf.server_options.as_dict)
+        **cs_conf.options.as_dict)
 
     logger = logging.getLogger('consumer')
-    logger.info('*' * 12 + ' Running foobar - RPC Consumer ' + '*' * 12)
+    logger.info('*' * 12 + f' {cs_conf.verbose_name} ' + '*' * 12)
     time.sleep(.5)
     for name in callables.keys():
         logger.info('#' * 3 + ' registered FaaS: %s' % name)

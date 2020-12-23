@@ -1,34 +1,34 @@
 from abc import ABC, abstractmethod
+from typing import TypeVar
 
-from .objects import AMQPEntities, ProxyObject
+from .mixins import AMQPMixin
+from .objects import ProxyObject
+
+BlockingConnection = TypeVar('BlockingConnection')
+Channel = TypeVar('Channel')
 
 
-class ConsumerInterface(ABC):
-    def __init__(self,
-                 amqp_url: str,
-                 amqp_entities: AMQPEntities,
-                 prefetch_count: int = 1):
-        """
-        Contract/Interface for a consumer class.
+def channel_is_open(func):
+    """
+    Checks if he Producer channel is opened, else opens a new one.
+    """
+    def wrapper(ins):
+        if not ins.channel.is_open:
+            new_ch = ins.open_new_channel()
+            ins.channel = new_ch
+        return func(ins)
+    return wrapper
 
-        :param str amqp_url: The AMQP url to connect with
-            (default is: amqp://guest:guest@localhost:5672/%2F).
-        :param AMQPEntities amqp_entities: Params for configured way of amqp_entities
-            (exchange, exchange_type, queue and routing_key).
-        :param int prefetch_count: the consumer throughput
-            (In production, experiment with higher prefetch values).
-        """
+
+class ConsumerInterface(AMQPMixin, ABC):
+    def __init__(self, amqp_url: str, prefetch_count: int = 1, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._amqp_url = amqp_url
-        self._amqp_entities = amqp_entities
         self._prefetch_count = prefetch_count
 
     @property
     def amqp_url(self):
         return self._amqp_url
-
-    @property
-    def amqp_entities(self):
-        return self._amqp_entities
 
     @property
     def prefetch_count(self):
@@ -37,7 +37,43 @@ class ConsumerInterface(ABC):
     @abstractmethod
     def run(self):
         """
-        The execution of that method will start the RPC server consuming.
+        Will start the RPC server consuming.
+        """
+        pass
+
+
+class ProducerInterface(AMQPMixin, ABC):
+    __connection: BlockingConnection = None
+    __channel: Channel = None
+
+    def __init__(self, bk_con: BlockingConnection, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__connection = bk_con
+        self.__channel = self.open_new_channel()
+
+    def __del__(self):
+        self.channel.close()
+
+    @property
+    def connection(self) -> BlockingConnection:
+        return self.__connection
+
+    @property
+    @channel_is_open
+    def channel(self) -> Channel:
+        return self.__channel
+
+    @channel.setter
+    def channel(self, ch_):
+        self.__channel = ch_
+
+    def open_new_channel(self) -> Channel:
+        return self.connection.channel()
+
+    @abstractmethod
+    def publish(self, x_request: ProxyObject) -> ProxyObject:
+        """
+        Will publish an RPC call to server.
         """
         pass
 

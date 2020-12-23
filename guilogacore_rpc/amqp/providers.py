@@ -1,16 +1,12 @@
 import configparser
 
-from guilogacore_rpc.amqp.domain.objects import BrokerConnectionParams, AMQPEntities, ServerOptions
+from .domain.objects import BrokerConnectionParams, AMQPEntities, ServerOptions, ClientOptions
+from .domain.mixins import AppConfigMixin
 
 
-class ConsumerConfiguration:
-    def __init__(self, verbose_name: str, faas_app: str, broker_connection: BrokerConnectionParams,
-                 amqp_entities: AMQPEntities, server_options: ServerOptions):
-        self.verbose_name = verbose_name
-        self.faas_app = faas_app
-        self.con_params = broker_connection
-        self.amqp_entities = amqp_entities
-        self.server_options = server_options
+class ConsumerConfiguration(AppConfigMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def get_instance(cls, filepath: str):
@@ -19,32 +15,38 @@ class ConsumerConfiguration:
 
         :rtype: ConsumerConfiguration
         """
-        config_data = read_config_ini(filepath)
-        # params_data = config_data['params']
+        config_data = cls.read_config_ini(filepath)
         return cls(
-            verbose_name=config_data['FaaS']['verbose_name'],
-            faas_app=config_data['FaaS']['faas_app'],
+            verbose_name=config_data['server']['verbose_name'],
+            root=config_data['server']['root'],
             broker_connection=BrokerConnectionParams.create(
-                config_data['broker_connection']),
+                config_data['server.connection']),
             amqp_entities=AMQPEntities.create(
-                config_data['amqp_entities']),
-            server_options=ServerOptions.create(
-                config_data['server_options']),
+                config_data['server.amqp_entities']),
+            options=ServerOptions.create(
+                config_data['server.options']),
         )
 
 
-def read_config_ini(filepath: str) -> dict:
-    config = configparser.ConfigParser()
-    config.read(filepath)
-    return convert_config_to_dict(config)
+class ProducerConfiguration(AppConfigMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+    @classmethod
+    def get_instance(cls, filepath: str):
+        """
+        Factory function to create an instance from read configuration data.
 
-def convert_config_to_dict(config: configparser.ConfigParser) -> dict:
-    dict_config = {}
-    for section in config.sections():
-        dict_section = {}
-        for key, value in config[section].items():
-            dict_section[key] = value
-        dict_config[section] = dict_section
-
-    return dict_config
+        :rtype: ProducerConfiguration
+        """
+        config_data = cls.read_config_ini(filepath)
+        return cls(
+            verbose_name=config_data['client']['verbose_name'],
+            root=config_data['client']['root'],
+            broker_connection=BrokerConnectionParams.create(
+                config_data['client.connection']),
+            amqp_entities=AMQPEntities.create(
+                config_data['client.amqp_entities']),
+            options=ClientOptions.create(
+                config_data['client.options']),
+        )

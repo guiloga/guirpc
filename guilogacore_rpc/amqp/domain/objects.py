@@ -1,5 +1,7 @@
 from typing import Any
 
+from .mixins import MessagePropertiesMixin
+
 
 class BrokerConnectionParams:
     def __init__(self, host, port, user, password):
@@ -65,13 +67,36 @@ class ServerOptions:
         :rtype: ServerOptions
         """
         return cls(
-            prefetch_count=int(object_data.get('prefetch_count')),
+            prefetch_count=int(object_data.get('prefetch_count', 1)),
         )
 
     @property
     def as_dict(self):
         return dict(
             prefetch_count=self.prefetch_count,
+        )
+
+
+class ClientOptions:
+    def __init__(self, response_consumer: str = ''):
+        self.response_consumer = response_consumer
+
+    @classmethod
+    def create(cls, object_data: dict):
+        """
+        Factory function to create an instance from dict data.
+
+        :param dict object_data: options data.
+        :rtype: ClientOptions
+        """
+        return cls(
+            response_consumer=object_data.get('response_consumer', ''),
+        )
+
+    @property
+    def as_dict(self):
+        return dict(
+            response_consumer=self.response_consumer,
         )
 
 
@@ -84,40 +109,7 @@ class ProxyObject:
         return self.__object
 
 
-class PropertiesMixin:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._encoding = None
-        self._bytes = None
-        self._content_type = None
-        self._message_headers = None
-
-    def set_properties(self, bytes_: bytes, encoding: str, content_type: str,
-                       message_headers: dict):
-        self._bytes = bytes_
-        self._encoding = encoding
-        self._content_type = content_type
-        self._message_headers = message_headers
-
-    @property
-    def bytes(self):
-        return self._bytes
-
-    @property
-    def content(self):
-        ct = self._bytes.decode(encoding=self._encoding) if self._bytes else None
-        return ct
-
-    @property
-    def content_type(self):
-        return self._content_type
-
-    @property
-    def message_headers(self):
-        return self._message_headers
-
-
-class ProxyRequest(PropertiesMixin, ProxyObject):
+class ProxyRequest(MessagePropertiesMixin, ProxyObject):
     def __init__(self, app_id: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app_id = app_id
@@ -127,7 +119,7 @@ class ProxyRequest(PropertiesMixin, ProxyObject):
         return self._app_id
 
 
-class ProxyResponse(PropertiesMixin, ProxyObject):
+class ProxyResponse(MessagePropertiesMixin, ProxyObject):
     def __init__(self, status_code: int = 200, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._status_code = status_code

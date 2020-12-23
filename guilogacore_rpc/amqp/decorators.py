@@ -1,13 +1,15 @@
 from typing import Type
 from pika import BasicProperties
+from pika.adapters.blocking_connection import BlockingConnection
 
 from .domain.contracts import BaseSerializer
 from .domain.encoding import StringEncoder, BytesEncoder
 from .domain.objects import ProxyRequest
 from .serializers import TextSerializer
+from .producer import Producer
 
 
-def register_faas(req_sz:  Type[BaseSerializer],
+def register_faas(req_sz: Type[BaseSerializer],
                   resp_sz: Type[BaseSerializer],
                   req_codec: str = None,
                   resp_codec: str = None):
@@ -22,10 +24,11 @@ def register_faas(req_sz:  Type[BaseSerializer],
     :return: The function wrapper that calls decorated function
         with the proper decoding and encoding response process.
     """
+
     def exec_wrapper(func):
-        def _exec(b64_msg_bytes: bytes, pika_props: BasicProperties):
+        def _exec(msg_bytes_en: bytes, pika_props: BasicProperties):
             required_en = req_codec or req_sz.ENCODING
-            msg_bytes = BytesEncoder.decode(b64_msg_bytes)
+            msg_bytes = BytesEncoder.decode(msg_bytes_en)
             try:
                 msg_str = StringEncoder.decode(msg_bytes,
                                                codec=required_en)
@@ -61,9 +64,9 @@ def register_faas(req_sz:  Type[BaseSerializer],
             except Exception as err:
                 x_response.status = 500
                 x_response.error_message = (
-                    'SerializationError: an error occurred while serializing message ' +
-                    '{0} with {1}\n'.format(x_response.object, resp_sz) +
-                    f'\n*** error_trace ***\n{err}')
+                        'SerializationError: an error occurred while serializing message ' +
+                        '{0} with {1}\n'.format(x_response.object, resp_sz) +
+                        f'\n*** error_trace ***\n{err}')
 
             response_encoding = resp_codec or resp_sz.ENCODING
             resp_bytes = None
@@ -74,9 +77,9 @@ def register_faas(req_sz:  Type[BaseSerializer],
             except Exception as err:
                 x_response.status = 500
                 x_response.error_message = (
-                    f'ContentEncodingError: an error occurred while trying to encode {resp_str} ' +
-                    f'into \'{response_encoding}\'' +
-                    f'\n*** error_trace ***\n{err}')
+                        f'ContentEncodingError: an error occurred while trying to encode {resp_str} ' +
+                        f'into \'{response_encoding}\'' +
+                        f'\n*** error_trace ***\n{err}')
 
             if x_response.is_error:
                 resp_ct = TextSerializer.CONTENT_TYPE
@@ -97,4 +100,18 @@ def register_faas(req_sz:  Type[BaseSerializer],
             return x_response
 
         return _exec
+
     return exec_wrapper
+
+
+def faas_producer(con: BlockingConnection, faas_name: str):
+    def publish_wrapper(func):
+        def _publish(*args, **kwargs):
+            x_request = func(*args, **kwargs)
+            x_request.add_headers({'FaaS-Name': faas_name})
+            producer = Producer(con)
+            # TODO:_
+
+        return _publish
+
+    return publish_wrapper

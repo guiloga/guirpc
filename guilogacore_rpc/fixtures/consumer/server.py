@@ -25,11 +25,11 @@ def foobar_sum(x_request):
             500,
             "ServerError: An unexpected error occurred " +
             f"while processing the request message.\n {err}")
-    return ProxyResponse(object_=response)
+    return response
 
 
 @register_faas(req_sz=TextSerializer, resp_sz=TextSerializer)
-def count_foobar(x_request):
+def foobar_count(x_request):
     """
     This is an example of a service callback implementation with :class:`TextSerializer`
     as a request and response serializer types.
