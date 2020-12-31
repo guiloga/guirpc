@@ -1,12 +1,23 @@
 from typing import Type
 from pika import BasicProperties
-from pika.adapters.blocking_connection import BlockingConnection
 
 from .domain.contracts import BaseSerializer
 from .domain.encoding import StringEncoder, BytesEncoder
-from .domain.objects import ProxyRequest
+from .domain.exceptions import SerializationError
+from .domain.objects import ProxyRequest, ProxyResponse
 from .serializers import TextSerializer
 from .producer import Producer
+from .utils import ClientConnector
+
+
+def _connection_is_open(func):
+    def wrapper(*args, **kwargs):
+        client_con = args[0] if len(args) > 0 else kwargs['con']
+        if client_con.is_reload_required:
+            client_con.reload()
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def register_faas(req_sz: Type[BaseSerializer],
@@ -26,7 +37,7 @@ def register_faas(req_sz: Type[BaseSerializer],
     """
 
     def exec_wrapper(func):
-        def _exec(msg_bytes_en: bytes, pika_props: BasicProperties):
+        def _exec(msg_bytes_en: bytes, pika_props: BasicProperties) -> ProxyResponse:
             required_en = req_codec or req_sz.ENCODING
             msg_bytes = BytesEncoder.decode(msg_bytes_en)
             try:
@@ -64,9 +75,9 @@ def register_faas(req_sz: Type[BaseSerializer],
             except Exception as err:
                 x_response.status = 500
                 x_response.error_message = (
-                        'SerializationError: an error occurred while serializing message ' +
+                        'SerializationError: an error occurred while serializing object ' +
                         '{0} with {1}\n'.format(x_response.object, resp_sz) +
-                        f'\n*** error_trace ***\n{err}')
+                        f'\n*** error_desc ***\n{err}')
 
             response_encoding = resp_codec or resp_sz.ENCODING
             resp_bytes = None
@@ -79,7 +90,7 @@ def register_faas(req_sz: Type[BaseSerializer],
                 x_response.error_message = (
                         f'ContentEncodingError: an error occurred while trying to encode {resp_str} ' +
                         f'into \'{response_encoding}\'' +
-                        f'\n*** error_trace ***\n{err}')
+                        f'\n*** error_desc ***\n{err}')
 
             if x_response.is_error:
                 resp_ct = TextSerializer.CONTENT_TYPE
@@ -89,13 +100,17 @@ def register_faas(req_sz: Type[BaseSerializer],
             else:
                 resp_ct = resp_sz.CONTENT_TYPE
 
-            b64_resp_bytes = BytesEncoder.encode(resp_bytes)
+            body = BytesEncoder.encode(resp_bytes)
+
+            x_response.add_headers(
+                {'Response-Status': x_response.status_code,
+                 'Response-Serializer': resp_sz.__name__})
 
             x_response.set_properties(
-                bytes_=b64_resp_bytes,
+                bytes_=body,
                 encoding=response_encoding,
                 content_type=resp_ct,
-                message_headers=pika_props.headers)
+                message_headers=x_response.message_headers)
 
             return x_response
 
@@ -104,13 +119,42 @@ def register_faas(req_sz: Type[BaseSerializer],
     return exec_wrapper
 
 
-def faas_producer(con: BlockingConnection, faas_name: str):
+@_connection_is_open
+def faas_producer(con: ClientConnector,
+                  faas_name: str,
+                  req_sz: Type[BaseSerializer]):
+    """
+    Decorator that implements an interface, it establishes that the decorated function
+    needs to return a ProxyRequest object, it then passes the proxy_request object
+    through a Producer RPC call getting back a ProxyResponse.
+
+    :param con: the client connector (ClientConnector).
+    :param faas_name: the name of the RPC FaaS function that will be invoked.
+    :param req_sz: the request serializer type.
+    :return: The function wrapper that calls the decorated function
+        passing trough a Producer publish call returning a ProxyResponse.
+    """
     def publish_wrapper(func):
-        def _publish(*args, **kwargs):
+        def _publish(*args, **kwargs) -> ProxyResponse:
             x_request = func(*args, **kwargs)
             x_request.add_headers({'FaaS-Name': faas_name})
-            producer = Producer(con)
-            # TODO:_
+
+            try:
+                req_str = req_sz.serialize(x_request.object)
+                req_bytes = StringEncoder.encode(req_str,
+                                                 codec=req_sz.ENCODING)
+                body = BytesEncoder.encode(req_bytes)
+            except Exception as err:
+                raise SerializationError(x_request.object, req_sz, err)
+
+            x_request.bytes = body
+            x_request.content_type = req_sz.CONTENT_TYPE
+            x_request.encoding = req_sz.ENCODING
+
+            producer = Producer(con.bck_con, con.config.amqp_entities)
+            x_response = producer.publish(x_request)
+
+            return x_response
 
         return _publish
 

@@ -56,22 +56,32 @@ class MessagePropertiesMixin:
     def bytes(self):
         return self._bytes
 
+    @bytes.setter
+    def bytes(self, bt):
+        self._bytes = bt
+
     @property
     def encoding(self):
         return self._encoding
 
-    @property
-    def content(self):
-        ct = self._bytes.decode(encoding=self._encoding) if self._bytes else None
-        return ct
+    @encoding.setter
+    def encoding(self, enc):
+        self._encoding = enc
 
     @property
     def content_type(self):
         return self._content_type
+
+    @content_type.setter
+    def content_type(self, ctp):
+        self._content_type = ctp
 
     @property
     def message_headers(self):
         return self._message_headers
 
     def add_headers(self, headers: dict):
-        self._message_headers.update(headers)
+        if not self._message_headers:
+            self._message_headers = {**headers}
+        else:
+            self._message_headers.update(headers)

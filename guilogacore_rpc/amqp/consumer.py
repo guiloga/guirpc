@@ -165,16 +165,19 @@ class Consumer(ConsumerInterface):
         try:
             faas = self.faas_callables[faas_name]
         except:
-            #TODO: Response with status error 400 (fass is not registered)
+            #TODO: Response with status error 400 (FaaS is not registered)
             pass
 
-        resp = faas.__call__(body, properties)
+        x_resp = faas.__call__(body, properties)
 
         _ch.basic_publish(exchange='',
                           routing_key=properties.reply_to,
                           properties=pika.BasicProperties(
+                              content_type=x_resp.content_type,
+                              content_encoding=x_resp.encoding,
+                              headers=x_resp.message_headers,
                               correlation_id=properties.correlation_id),
-                          body=resp.bytes)
+                          body=x_resp.bytes)
         LOGGER.info('Reply published with routing_key %s' % properties.reply_to)
         self.acknowledge_message(basic_deliver.delivery_tag)
 
@@ -251,5 +254,7 @@ class ProxyReconnectConsumer(ConsumerInterface):
         self._reconnect_delay = min(self._reconnect_delay, self.MAX_RECONNECT_DELAY)
 
     def _create_new_consumer(self):
-        return Consumer(self._consumer.faas_callables, self.amqp_url, self.amqp_entities,
+        return Consumer(self._consumer.faas_callables,
+                        amqp_url=self.amqp_url,
+                        amqp_entities=self.amqp_entities,
                         prefetch_count=self.prefetch_count)

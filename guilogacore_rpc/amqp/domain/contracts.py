@@ -12,11 +12,13 @@ def channel_is_open(func):
     """
     Checks if he Producer channel is opened, else opens a new one.
     """
+
     def wrapper(ins):
         if not ins.channel.is_open:
             new_ch = ins.open_new_channel()
             ins.channel = new_ch
         return func(ins)
+
     return wrapper
 
 
@@ -49,17 +51,19 @@ class ProducerInterface(AMQPMixin, ABC):
     def __init__(self, bk_con: BlockingConnection, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__connection = bk_con
-        self.__channel = self.open_new_channel()
+        self.channel = self.open_new_channel()
 
     def __del__(self):
-        self.channel.close()
+        try:
+            self.channel.close()
+        except:
+            pass
 
     @property
     def connection(self) -> BlockingConnection:
         return self.__connection
 
     @property
-    @channel_is_open
     def channel(self) -> Channel:
         return self.__channel
 
@@ -71,6 +75,7 @@ class ProducerInterface(AMQPMixin, ABC):
         return self.connection.channel()
 
     @abstractmethod
+    @channel_is_open
     def publish(self, x_request: ProxyObject) -> ProxyObject:
         """
         Will publish an RPC call to server.

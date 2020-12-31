@@ -118,6 +118,16 @@ class ProxyRequest(MessagePropertiesMixin, ProxyObject):
     def app_id(self):
         return self._app_id
 
+    @classmethod
+    def create(cls, object_, encoding, content_type, message_headers=None, app_id=None):
+        return cls(
+            object_=object_,
+            encoding=encoding,
+            content_type=content_type,
+            message_headers=message_headers,
+            app_id=app_id
+        )
+
 
 class ProxyResponse(MessagePropertiesMixin, ProxyObject):
     def __init__(self, status_code: int = 200, *args, **kwargs):

@@ -4,6 +4,8 @@ import pika
 
 from .domain.contracts import ProducerInterface
 from .domain.objects import ProxyRequest, ProxyResponse
+from .domain.encoding import BytesEncoder, StringEncoder
+from .utils import import_serializer
 
 
 class Producer(ProducerInterface):
@@ -12,11 +14,15 @@ class Producer(ProducerInterface):
     receiving back a response through a unique channel.
     """
     def __init__(self, *args, **kwargs):
-        super().__init__( *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._response_queue = None
         self._corr_id = None
         self._response = None
         self._set_channel_consume()
+
+    @property
+    def response(self):
+        return self._response
 
     def _set_channel_consume(self):
         _dq = self.channel.queue_declare(queue=self.amqp_entities.queue,
@@ -30,15 +36,14 @@ class Producer(ProducerInterface):
 
     def _handle_response(self, ch, method, props, body):
         if self._corr_id == props.correlation_id:
-            print('Response body received %s' % body)
-            self._response = body
-            # response_bytes = base64.b64decode(body)
-            # response_message = response_bytes.decode('ascii')
-            # self.response = response_message
+            # TODO: logging
+            # print('Response body received %s' % body)
+            self.set_x_response(body, props)
 
     def publish(self, request: ProxyRequest) -> ProxyResponse:
         self._response = None
         self._corr_id = str(uuid4())
+
         self.channel.basic_publish(
             exchange=self.amqp_entities.exchange,
             routing_key=self.amqp_entities.routing_key,
@@ -53,7 +58,26 @@ class Producer(ProducerInterface):
             ),
             body=request.bytes)
 
-        while self._response is None:
+        while not self.response:
             self.connection.process_data_events()
 
-        return self._response
+        return self.response
+
+    def set_x_response(self, body, props):
+        status = props.headers.get('Response-Status')
+        sz_name = props.headers.get('Response-Serializer')
+
+        sz = import_serializer(sz_name)
+        decoded_body = BytesEncoder.decode(body)
+        msg_str = StringEncoder.decode(decoded_body,
+                                       codec=sz.ENCODING)
+
+        object_ = sz.deserialize(msg_str)
+
+        x_resp = ProxyResponse(status, object_)
+        x_resp.set_properties(bytes_=body,
+                              encoding=props.content_encoding,
+                              content_type=props.content_type,
+                              message_headers=props.headers)
+
+        self._response = x_resp
