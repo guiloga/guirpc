@@ -4,7 +4,7 @@ import os
 from typing import Dict
 
 import pika
-from pika.exceptions import ConnectionWrongStateError, ChannelWrongStateError
+from pika.exceptions import ConnectionWrongStateError
 
 from .providers import ProducerConfiguration
 
@@ -82,7 +82,7 @@ class ClientConnector:
         for id_, con in cls.BCK_CON.items():
             try:
                 con.close()
-            except (ConnectionWrongStateError, ChannelWrongStateError):
+            except ConnectionWrongStateError:
                 pass
 
     @classmethod

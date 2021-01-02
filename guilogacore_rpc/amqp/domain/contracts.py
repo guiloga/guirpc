@@ -12,7 +12,6 @@ def channel_is_open(func):
     """
     Checks if he Producer channel is opened, else opens a new one.
     """
-
     def wrapper(ins):
         if not ins.channel.is_open:
             new_ch = ins.open_new_channel()

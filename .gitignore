@@ -117,3 +117,4 @@ test_publish.py
 guilogacore_rpc/foobar/
 guilogacore_rpc/foobar.ini
 foobar*
+test_config.ini

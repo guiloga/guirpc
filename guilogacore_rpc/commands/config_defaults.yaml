@@ -1,0 +1,29 @@
+consumer_config:
+  connection:
+    host: localhost
+    port: 5672
+    user: guest
+    password: guest
+
+  amqp_entities:
+    exchange: rpc_gateway
+    exchange_type: direct
+    queue: my_queue
+    routing_key: my_queue
+
+  options:
+    prefetch_count: 1
+
+producer_config:
+  connection:
+    host: localhost
+    port: 5672
+    user: guest
+    password: guest
+
+  amqp_entities:
+    exchange: rpc_gateway
+    routing_key: my_queue
+
+  options:
+    consumer: ""

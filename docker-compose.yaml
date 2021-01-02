@@ -1,0 +1,15 @@
+version: "3"
+services:
+  consumer:
+    build:
+      dockerfile: docker/Dockerfile
+      context: .
+    container_name: foobar_consumer
+    links:
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq_server
+    ports:
+      - "5672:5672"
+      - "15672:15672"

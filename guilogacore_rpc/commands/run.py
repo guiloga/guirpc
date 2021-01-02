@@ -27,22 +27,30 @@ def _set_app_module_to_path(app_file):
 
 def _import_faas_module():
     global FaaS_MODULE
-    FaaS_MODULE = importlib.import_module(
-        f'{APP_MODULE_NAME}.server')
+    try:
+        FaaS_MODULE = importlib.import_module(
+            f'{APP_MODULE_NAME}.server')
+    except ModuleNotFoundError:
+        error = Exception(
+            f"'{APP_MODULE_NAME}' module was not found")
+        return error
+    return None
 
 
 def find_registered_faas(app_file):
     _set_app_module_to_path(app_file)
-    _import_faas_module()
+    err = _import_faas_module()
 
-    registered_faas = {}
-    attr_names = [item for item in FaaS_MODULE.__dict__ if item[:2] != '__']
-    for name in attr_names:
-        attr_ = getattr(FaaS_MODULE, name)
-        if attr_.__qualname__ == 'register_faas.<locals>.exec_wrapper.<locals>._exec':
-            registered_faas[name] = attr_
+    registered_faas = dict()
 
-    return registered_faas
+    if not err:
+        attr_names = [item for item in FaaS_MODULE.__dict__ if item[:2] != '__']
+        for name in attr_names:
+            attr_ = getattr(FaaS_MODULE, name)
+            if attr_.__qualname__ == 'register_faas.<locals>.exec_wrapper.<locals>._exec':
+                registered_faas[name] = attr_
+
+    return registered_faas, err
 
 
 class ConfigININotProvidedError(Exception):
@@ -54,6 +62,7 @@ class ConfigININotProvidedError(Exception):
 
 def runconsumer(with_config, **options):
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    logger = logging.getLogger('consumer')
 
     config_filepath = with_config
     if not config_filepath:
@@ -64,17 +73,19 @@ def runconsumer(with_config, **options):
     except Exception:
         raise ConsumerConfigurationError
 
-    callables = find_registered_faas(cs_conf.root)
-    consumer = ProxyReconnectConsumer(
-        faas_callables=callables,
-        amqp_url=cs_conf.con_params.amqp_url,
-        amqp_entities=cs_conf.amqp_entities,
-        **cs_conf.options.as_dict)
+    callables, err = find_registered_faas(cs_conf.root)
+    if not err:
+        consumer = ProxyReconnectConsumer(
+            faas_callables=callables,
+            amqp_url=cs_conf.con_params.amqp_url,
+            amqp_entities=cs_conf.amqp_entities,
+            **cs_conf.options.as_dict)
 
-    logger = logging.getLogger('consumer')
-    logger.info('*' * 12 + f' {cs_conf.verbose_name} ' + '*' * 12)
-    time.sleep(.5)
-    for name in callables.keys():
-        logger.info('#' * 3 + ' registered FaaS: %s' % name)
-    time.sleep(.3)
-    consumer.run()
+        logger.info('*' * 12 + f' {cs_conf.verbose_name} ' + '*' * 12)
+        time.sleep(.5)
+        for name in callables.keys():
+            logger.info('#' * 3 + ' registered FaaS: %s' % name)
+        time.sleep(.3)
+        consumer.run()
+    else:
+        logger.info(f'An error occurred while loading consumer application: {err}')

@@ -19,12 +19,21 @@ It also provides a command line manager to handle operations that will essential
 
 ## Documentation ###
 
-Documentation for the project is available at: [https://github.com/guiloga/dummy-rpc-server/][docs].
+Documentation for the project is available at: [docs](https://github.com/guiloga/dummy-rpc-server/).
 TODO
 
 ## Tests
-TODO
+Tests are built with [pytest](https://docs.pytest.org/en/stable/) and run with docker.
+In order tu run **unit** and **integration** tests do the following:
 
+1. Run RabbitMQ (optionally with the management plugin) and the *foobar* consumer service:
+```
+docker-compose up --build -d
+```
+2. Run command inside foobar_consumer container to run all tests with the the ```pytest``` command.:
+```
+docker exec -it foobar_consumer sh -c "pytest"
+```
 
 ## Deployment
 TODO

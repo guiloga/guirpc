@@ -3,10 +3,11 @@ import pytest
 from guilogacore_rpc.amqp.domain.exceptions import SerializationError
 from guilogacore_rpc.amqp.domain.objects import ProxyResponse
 from guilogacore_rpc.amqp.producer import Producer
+from guilogacore_rpc.amqp.utils import get_producer_config, ClientConnector
 from guilogacore_rpc.fixtures.producer import client
 
 
-class TestFixtures:
+class TestProducer:
     @pytest.mark.usefixtures('connector')
     def test_producer_creation(self, connector):
         producer = Producer(connector.bck_con,
@@ -21,6 +22,8 @@ class TestFixtures:
         assert isinstance(x_resp, ProxyResponse)
         assert x_resp.object is not None
 
+
+class TestFixtures:
     def test_foobar_sum_ok(self):
         x_resp = client.foobar_sum(2, 3)
 
@@ -49,3 +52,31 @@ class TestFixtures:
 
     def test_foobar_count_validation_error(self):
         pass
+
+
+class TestClientConnector:
+    @pytest.mark.usefixtures('connector')
+    def test_creation(self, connector):
+        connector2 = ClientConnector()
+
+        assert connector.is_initialized
+        assert connector2.is_initialized
+        assert connector.config == connector2.config
+        assert connector.bck_con == connector2.bck_con
+
+    @pytest.mark.usefixtures('connector')
+    def test_reload(self, connector):
+        config_hash = connector.config.__hash__()
+        bck_con_hash = connector.bck_con.__hash__()
+        connector.reload()
+
+        assert connector.is_reload_required is False
+        assert connector.config.__hash__() != config_hash
+        assert connector.bck_con.__hash__() != bck_con_hash
+
+    def test_open_bck_con(self):
+        config = get_producer_config()
+        bck_con = ClientConnector.open_bck_con(
+            config.con_params.amqp_url)
+
+        assert bck_con.is_open

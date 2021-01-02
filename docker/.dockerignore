@@ -1,0 +1,5 @@
+*.ini
+!pytest.ini
+foobar/
+.pytest_cache/
+setup.py/
