@@ -1,5 +1,11 @@
 version: "3.9"
 services:
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq_server
+    ports:
+      - "5672:5672"
+      - "15672:15672"
   consumer:
     build:
       context: .
@@ -10,19 +16,19 @@ services:
       - PYTHONUNBUFFERED=1
     links:
       - rabbitmq
-  rabbitmq:
-    image: rabbitmq:management-alpine
-    container_name: rabbitmq_server
-    ports:
-      - "5672:5672"
-      - "15672:15672"
   test:
     image: guiloga/foobar_consumer
-    command: python -m pytest
+    command: /bin/sh -c "while ! nc -z rabbitmq:15672; do sleep 1; done; sleep 30; python -m pytest"
+    container_name: guilogacore_rpc_test
     environment:
       - PYTHONUNBUFFERED=1
+    links:
+      - rabbitmq
+    depends_on:
+      - consumer
   static_analysis:
     image: guiloga/foobar_consumer
     command: python -m flake8 --max-complexity 10 --ignore E501
+    container_name: guilogacore_rpc_sty
     environment:
       - PYTHONUNBUFFERED=1

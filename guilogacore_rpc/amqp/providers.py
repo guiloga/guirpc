@@ -1,5 +1,3 @@
-import configparser
-
 from .domain.objects import BrokerConnectionParams, AMQPEntities, ServerOptions, ClientOptions
 from .domain.mixins import AppConfigMixin
 
