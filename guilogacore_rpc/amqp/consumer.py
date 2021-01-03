@@ -165,7 +165,7 @@ class Consumer(ConsumerInterface):
         try:
             faas = self.faas_callables[faas_name]
         except:
-            #TODO: Response with status error 400 (FaaS is not registered)
+            # TODO: Response with status error 400 (FaaS is not registered)
             pass
 
         x_resp = faas.__call__(body, properties)

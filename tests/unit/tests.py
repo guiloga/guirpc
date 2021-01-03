@@ -3,9 +3,7 @@ This module covers all unit tests about domain and
 infrastructure layers of guilogacore_rpc.amqp package.
 """
 
-import pytest
-
-from guilogacore_rpc.amqp.utils import get_producer_config, ClientConnector
+from guilogacore_rpc.amqp.utils import get_producer_config
 from guilogacore_rpc.amqp.providers import ProducerConfiguration
 
 

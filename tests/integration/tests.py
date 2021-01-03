@@ -47,7 +47,7 @@ class TestFixtures:
 
     def test_foobar_count_serialization_error(self):
         with pytest.raises(SerializationError):
-            x_resp = client.foobar_count(
+            client.foobar_count(
                 'Bad sentence, it contains ñ and cannot be encoded into ascii')
 
     def test_foobar_count_validation_error(self):

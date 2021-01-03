@@ -1,4 +1,4 @@
-from guilogacore_rpc.amqp.domain.objects import ProxyRequest, ProxyResponse
+from guilogacore_rpc.amqp.domain.objects import ProxyResponse
 from guilogacore_rpc.amqp.decorators import register_faas
 from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer
 

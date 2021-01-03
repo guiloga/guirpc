@@ -1,0 +1,35 @@
+dist: trusty
+
+services:
+  - docker
+
+env:
+  COMPOSE_VERSION: 1.27.4
+
+before_install:
+ - curl -L https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+ - chmod +x docker-compose
+ - sudo mv docker-compose /usr/local/bin
+ - docker --version
+ - docker-compose version
+ - export GIT_SHA=`git rev-parse --short HEAD`
+ - echo "Building commit $GIT_SHA"
+
+jobs:
+  include:
+    - stage: build
+      name: "Build"
+      script:
+      - docker-compose build
+    - stage: up_services
+      name: "Up Services"
+      script:
+        - docker-compose up -d rabbitmq consumer
+    - stage: tests
+      name: "Tests"
+      script:
+        - docker-compose run test
+    - stage: static_analysis
+      name: "Static Analysis"
+      script:
+      - docker-compose run static_analysis

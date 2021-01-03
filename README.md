@@ -48,7 +48,8 @@ python -m pep517.build .
 For development, create a link file which associates source code with your interpreter site-packages directory:
 ```shell script
 touch setup.py
-echo "import setuptools; setuptools.setup()" > setup.py
+echo "import setuptools
+setuptools.setup()" > setup.py
 # Then do
 pip install --editable .
 ```

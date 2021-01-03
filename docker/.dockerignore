@@ -2,4 +2,5 @@
 !pytest.ini
 foobar/
 .pytest_cache/
+*.pyc
 setup.py/

@@ -23,7 +23,7 @@ RUN apk update && \
 
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt && \
-    pip install -U pytest
+    pip install -U pytest flake8
 
 COPY . $ROOT_DIR
 

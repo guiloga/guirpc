@@ -1,10 +1,13 @@
-version: "3"
+version: "3.9"
 services:
   consumer:
     build:
-      dockerfile: docker/Dockerfile
       context: .
+      dockerfile: docker/Dockerfile
+    image: guiloga/foobar_consumer
     container_name: foobar_consumer
+    environment:
+      - PYTHONUNBUFFERED=1
     links:
       - rabbitmq
   rabbitmq:
@@ -13,3 +16,13 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+  test:
+    image: guiloga/foobar_consumer
+    command: python -m pytest
+    environment:
+      - PYTHONUNBUFFERED=1
+  static_analysis:
+    image: guiloga/foobar_consumer
+    command: python -m flake8 --max-complexity 10 --ignore E501
+    environment:
+      - PYTHONUNBUFFERED=1
