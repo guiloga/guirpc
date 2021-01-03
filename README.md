@@ -1,6 +1,7 @@
 # guilogacore-rpc
 ### RPC core package to build a FaaS-like application service
 ____
+[![Build Status](https://www.travis-ci.com/guiloga/guilogacore-rpc.svg?branch=master)](https://www.travis-ci.com/guiloga/guilogacore-rpc)
 
 This package implements core functionality that is compliant with the standard **AMQP**.
 It provides an interface with some decorators, encoders, serializers and in short all the surrounded layers for easily build,
@@ -19,24 +20,25 @@ It also provides a command line manager to handle operations that will essential
 
 ## Documentation ###
 
-Documentation for the project is available at: [docs](https://github.com/guiloga/dummy-rpc-server/).
-TODO
+Documentation for the package is not available yet.
 
 ## Tests
 Tests are built with [pytest](https://docs.pytest.org/en/stable/) and run with docker.
-In order tu run **unit** and **integration** tests do the following:
+In order tu run it be sure last that current stable versions of docker and docker-compose are installed.
 
-1. Run RabbitMQ (optionally with the management plugin) and the *foobar* consumer service:
+- First, build the *foobar* consumer service and run it alongside a RabbitMQ server(optionally with the management plugin):
 ```
-docker-compose up --build -d
+docker-compose up --build -d rabbitmq consumer
 ```
-2. Run command inside foobar_consumer container to run all tests with the the ```pytest``` command.:
+- Run all **unit** and **integration** tests:
 ```
-docker exec -it foobar_consumer sh -c "pytest"
+docker-compose run test
 ```
 
-## Deployment
-TODO
+Optionally, run code static analysis (with flake8):
+```
+docker-compose run static_analysis
+```
 
 ### Build
 
