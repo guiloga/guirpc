@@ -76,5 +76,9 @@ def rpc_call(exchange, routing_key, message):
     pass
 
 
-if __name__ == '__main__':
+def main():
     cli_manager()
+
+
+if __name__ == '__main__':
+    main()
