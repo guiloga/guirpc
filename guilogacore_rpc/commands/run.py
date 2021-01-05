@@ -1,45 +1,26 @@
-import importlib
+from importlib import util
 import logging
-import os
-import sys
-import time
+import traceback
 
 from guilogacore_rpc.amqp.domain.exceptions import ConsumerConfigurationError
 from guilogacore_rpc.amqp.consumer import ProxyReconnectConsumer
 from guilogacore_rpc.amqp.providers import ConsumerConfiguration
 
-LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
+LOG_FORMAT = '%(asctime)s [%(levelname)s] %(message)s'
 
-APP_MODULE_NAME = None
 FaaS_MODULE = None
 
 
-def _set_app_module_to_path(app_file):
-    dir_abspath = os.path.dirname(
-        os.path.abspath(app_file))
-
-    global APP_MODULE_NAME
-    APP_MODULE_NAME = os.path.basename(dir_abspath)
-
-    if APP_MODULE_NAME not in sys.path:
-        sys.path.append(APP_MODULE_NAME)
-
-
-def _import_faas_module():
+def _import_faas_module(app_file):
     global FaaS_MODULE
-    try:
-        FaaS_MODULE = importlib.import_module(
-            f'{APP_MODULE_NAME}.server')
-    except ModuleNotFoundError:
-        error = Exception(
-            f"'{APP_MODULE_NAME}' module was not found")
-        return error
-    return None
+
+    spec = util.spec_from_file_location('faas_module', app_file)
+    FaaS_MODULE = util.module_from_spec(spec)
+    spec.loader.exec_module(FaaS_MODULE)
 
 
 def find_registered_faas(app_file):
-    _set_app_module_to_path(app_file)
-    err = _import_faas_module()
+    err = _import_faas_module(app_file)
 
     registered_faas = dict()
 
@@ -47,8 +28,11 @@ def find_registered_faas(app_file):
         attr_names = [item for item in FaaS_MODULE.__dict__ if item[:2] != '__']
         for name in attr_names:
             attr_ = getattr(FaaS_MODULE, name)
-            if attr_.__qualname__ == 'register_faas.<locals>.exec_wrapper.<locals>._exec':
-                registered_faas[name] = attr_
+            try:
+                if attr_.__qualname__ == 'register_faas.<locals>.exec_wrapper.<locals>._exec':
+                    registered_faas[name] = attr_
+            except AttributeError:
+                pass
 
     return registered_faas, err
 
@@ -82,10 +66,8 @@ def runconsumer(with_config, **options):
             **cs_conf.options.as_dict)
 
         logger.info('*' * 12 + f' {cs_conf.verbose_name} ' + '*' * 12)
-        time.sleep(.5)
         for name in callables.keys():
             logger.info('#' * 3 + ' registered FaaS: %s' % name)
-        time.sleep(.3)
         consumer.run()
     else:
         logger.info(f'An error occurred while loading consumer application: {err}')
