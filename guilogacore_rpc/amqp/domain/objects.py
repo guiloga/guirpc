@@ -161,3 +161,7 @@ class ProxyResponse(MessagePropertiesMixin, ProxyObject):
     def is_success(self):
         st_str = str(self._status_code)
         return st_str[:1] == '2'
+
+
+class Foo:
+    bar = 1

@@ -1,6 +1,6 @@
 from guilogacore_rpc.amqp.domain.objects import ProxyResponse
 from guilogacore_rpc.amqp.decorators import register_faas
-from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer
+from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer, BinarySerializer
 
 
 @register_faas(req_sz=JsonSerializer, resp_sz=JsonSerializer)
@@ -55,3 +55,11 @@ def foobar_count(x_request):
             f"while processing the request message.\n {err}")
 
     return response
+
+
+@register_faas(req_sz=BinarySerializer, resp_sz=BinarySerializer)
+def foobar_raw(x_request):
+    foo = x_request.object
+    foo.likes = 'lovely ' + foo.likes
+
+    return ProxyResponse(200, foo)

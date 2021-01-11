@@ -1,6 +1,8 @@
-from guilogacore_rpc.amqp.domain.objects import ProxyRequest
+from typing import Any
+
+from guilogacore_rpc.amqp.domain.objects import ProxyRequest, Foo
 from guilogacore_rpc.amqp.decorators import faas_producer
-from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer
+from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer, BinarySerializer
 from guilogacore_rpc.amqp.utils import ClientConnector
 
 CONNECTOR = ClientConnector()
@@ -32,3 +34,16 @@ def foobar_count(sentence: str = 'My name is foo and I love bars'):
     :return: ProxyResponse
     """
     return ProxyRequest(object_=sentence)
+
+
+@faas_producer(con=CONNECTOR, faas_name='foobar_raw', req_sz=BinarySerializer)
+def foobar_raw(foo: Any):
+    """
+    This is a ProxyRequest constructor that will pass through an RPC call to a server.
+    It will call the foobar_raw function with :class:`BinarySerializer` as request serializer type,
+    as it requires it to parse the request object.
+
+    :param foo: Any kind of object or primitive.
+    :return: ProxyResponse
+    """
+    return ProxyRequest(object_=foo)

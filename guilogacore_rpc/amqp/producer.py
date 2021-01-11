@@ -1,10 +1,12 @@
 from uuid import uuid4
 
 import pika
+import pickle
 
 from .domain.contracts import ProducerInterface
 from .domain.objects import ProxyRequest, ProxyResponse
 from .domain.encoding import BytesEncoder, StringEncoder
+from .serializers import BinarySerializer
 from .utils import import_serializer
 
 
@@ -69,10 +71,14 @@ class Producer(ProducerInterface):
 
         sz = import_serializer(sz_name)
         decoded_body = BytesEncoder.decode(body)
-        msg_str = StringEncoder.decode(decoded_body,
-                                       codec=sz.ENCODING)
 
-        object_ = sz.deserialize(msg_str)
+        if sz is not BinarySerializer:
+            msg_str = StringEncoder.decode(decoded_body,
+                                           codec=sz.ENCODING)
+
+            object_ = sz.deserialize(msg_str)
+        else:
+            object_ = pickle.loads(decoded_body)
 
         x_resp = ProxyResponse(status, object_)
         x_resp.set_properties(bytes_=body,

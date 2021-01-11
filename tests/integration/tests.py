@@ -53,6 +53,15 @@ class TestFixtures:
     def test_foobar_count_validation_error(self):
         pass
 
+    @pytest.mark.usefixtures('raw_obj')
+    def test_foobar_raw(self, raw_obj):
+        x_resp = client.foobar_raw(raw_obj)
+
+        assert isinstance(x_resp, ProxyResponse)
+        assert x_resp.status_code == 200
+        assert isinstance(x_resp.object, raw_obj.__class__)
+        assert raw_obj != x_resp.object
+
 
 class TestClientConnector:
     @pytest.mark.usefixtures('connector')

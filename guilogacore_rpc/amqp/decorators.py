@@ -1,11 +1,12 @@
 from typing import Type
+import pickle
 from pika import BasicProperties
 
 from .domain.contracts import BaseSerializer
 from .domain.encoding import StringEncoder, BytesEncoder
 from .domain.exceptions import SerializationError
 from .domain.objects import ProxyRequest, ProxyResponse
-from .serializers import TextSerializer
+from .serializers import TextSerializer, BinarySerializer
 from .producer import Producer
 from .utils import ClientConnector
 
@@ -38,24 +39,28 @@ def register_faas(req_sz: Type[BaseSerializer],
 
     def exec_wrapper(func):
         def _exec(msg_bytes_en: bytes, pika_props: BasicProperties) -> ProxyResponse:
-            required_en = req_codec or req_sz.ENCODING
             msg_bytes = BytesEncoder.decode(msg_bytes_en)
-            try:
-                msg_str = StringEncoder.decode(msg_bytes,
-                                               codec=required_en)
-            except Exception:
-                # TODO: return proper status 40X and message (don't raise an Exception)
-                raise Exception(
-                    f'ContentDecodingError: an error occurred while trying to decode {msg_bytes} ' +
-                    f'into \'{required_en}\'')
+            required_en = req_codec or req_sz.ENCODING
+            if req_sz is not BinarySerializer:
+                try:
+                    msg_str = StringEncoder.decode(msg_bytes,
+                                                   codec=required_en)
+                except Exception:
+                    # TODO: return proper status 40X and message (don't raise an Exception)
+                    raise Exception(
+                        f'ContentDecodingError: an error occurred while trying to decode {msg_bytes} ' +
+                        f'into \'{required_en}\'')
 
-            try:
-                object_ = req_sz.deserialize(msg_str)
-            except Exception:
-                # TODO: return proper status 40X and message (don't raise an Exception)
-                raise Exception(
-                    'DeserializationError: an error occurred while deserializing message ' +
-                    '{0} with {1}'.format(msg_str, req_sz))
+                try:
+                    object_ = req_sz.deserialize(msg_str)
+                except Exception:
+                    # TODO: return proper status 40X and message (don't raise an Exception)
+                    raise Exception(
+                        'DeserializationError: an error occurred while deserializing message ' +
+                        '{0} with {1}'.format(msg_str, req_sz))
+            else:
+                object_ = pickle.loads(msg_bytes)
+                msg_bytes = object_
 
             x_request = ProxyRequest(
                 object_=object_,
@@ -69,28 +74,31 @@ def register_faas(req_sz: Type[BaseSerializer],
 
             x_response = func(x_request)
 
-            resp_str = None
-            try:
-                resp_str = resp_sz.serialize(x_response.object)
-            except Exception as err:
-                x_response.status = 500
-                x_response.error_message = (
-                        'SerializationError: an error occurred while serializing object ' +
-                        '{0} with {1}\n'.format(x_response.object, resp_sz) +
-                        f'\n*** error_desc ***\n{err}')
-
             response_encoding = resp_codec or resp_sz.ENCODING
-            resp_bytes = None
-            try:
-                if resp_str:
-                    resp_bytes = StringEncoder.encode(resp_str,
-                                                      codec=response_encoding)
-            except Exception as err:
-                x_response.status = 500
-                x_response.error_message = (
-                        f'ContentEncodingError: an error occurred while trying to encode {resp_str} ' +
-                        f'into \'{response_encoding}\'' +
-                        f'\n*** error_desc ***\n{err}')
+            if resp_sz is not BinarySerializer:
+                resp_str = None
+                try:
+                    resp_str = resp_sz.serialize(x_response.object)
+                except Exception as err:
+                    x_response.status = 500
+                    x_response.error_message = (
+                            'SerializationError: an error occurred while serializing object ' +
+                            '{0} with {1}\n'.format(x_response.object, resp_sz) +
+                            f'\n*** error_desc ***\n{err}')
+
+                resp_bytes = None
+                try:
+                    if resp_str:
+                        resp_bytes = StringEncoder.encode(resp_str,
+                                                          codec=response_encoding)
+                except Exception as err:
+                    x_response.status = 500
+                    x_response.error_message = (
+                            f'ContentEncodingError: an error occurred while trying to encode {resp_str} ' +
+                            f'into \'{response_encoding}\'' +
+                            f'\n*** error_desc ***\n{err}')
+            else:
+                resp_bytes = pickle.dumps(x_response.object)
 
             if x_response.is_error:
                 resp_ct = TextSerializer.CONTENT_TYPE
@@ -139,13 +147,17 @@ def faas_producer(con: ClientConnector,
             x_request = func(*args, **kwargs)
             x_request.add_headers({'FaaS-Name': faas_name})
 
-            try:
-                req_str = req_sz.serialize(x_request.object)
-                req_bytes = StringEncoder.encode(req_str,
-                                                 codec=req_sz.ENCODING)
-                body = BytesEncoder.encode(req_bytes)
-            except Exception as err:
-                raise SerializationError(x_request.object, req_sz, err)
+            if req_sz is not BinarySerializer:
+                try:
+                    req_str = req_sz.serialize(x_request.object)
+                    req_bytes = StringEncoder.encode(req_str,
+                                                     codec=req_sz.ENCODING)
+                except Exception as err:
+                    raise SerializationError(x_request.object, req_sz, err)
+            else:
+                req_bytes = pickle.dumps(x_request.object)
+
+            body = BytesEncoder.encode(req_bytes)
 
             x_request.bytes = body
             x_request.content_type = req_sz.CONTENT_TYPE
