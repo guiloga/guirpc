@@ -1,6 +1,6 @@
 from guilogacore_rpc.amqp.domain.objects import ProxyResponse
 from guilogacore_rpc.amqp.decorators import register_faas
-from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer, BinarySerializer
+from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer
 
 
 @register_faas(req_sz=JsonSerializer, resp_sz=JsonSerializer)
@@ -17,14 +17,19 @@ def foobar_sum(x_request):
     :returns: A response object.
     :rtype: ProxyResponse
     """
+    sum_body = {**x_request.object}
+
+    is_valid, err_msg = _validate_foobar_sum(sum_body)
+    if not is_valid:
+        return ProxyResponse(400, error_message=f'ValidationError: {err_msg}')
+
     try:
-        resp_obj = {'result': x_request.object['foo'] + x_request.object['bar']}
-        response = ProxyResponse(200, resp_obj)
+        resp_obj = {'result': sum_body['foo'] + sum_body['bar']}
+        response = ProxyResponse(200, object_=resp_obj)
     except Exception as err:
         response = ProxyResponse(
-            500,
-            "ServerError: An unexpected error occurred " +
-            f"while processing the request message.\n {err}")
+            500, error_message="ServerError: An unexpected error occurred "
+                               f"while processing the request message.\n {err}")
     return response
 
 
@@ -42,24 +47,39 @@ def foobar_count(x_request):
     :returns: A response object.
     :rtype: ProxyResponse
     """
+    normalized = x_request.object.lower()
+
+    is_valid, err_msg = _validate_foobar_count(normalized)
+    if not is_valid:
+        return ProxyResponse(400, error_message=f'ValidationError: {err_msg}')
+
     try:
-        normalized = x_request.object.lower()
         count = len(normalized.split('foo')) - 1
         count += len(normalized.split('bar')) - 1
 
-        response = ProxyResponse(200, str(count))
+        response = ProxyResponse(200, object_=str(count))
     except Exception as err:
         response = ProxyResponse(
-            500,
-            "ServerError: An unexpected error occurred " +
-            f"while processing the request message.\n {err}")
-
+            500, error_message="ServerError: An unexpected error occurred "
+                               f"while processing the request message.\n {err}")
     return response
 
 
-@register_faas(req_sz=BinarySerializer, resp_sz=BinarySerializer)
-def foobar_raw(x_request):
-    foo = x_request.object
-    foo.likes = 'lovely ' + foo.likes
+def _validate_foobar_sum(object_: dict):
+    if 'foo' not in object_.keys():
+        return False, "'foo' field is required."
+    elif 'bar' not in object_.keys():
+        return False, "'bar' field is required."
+    elif not isinstance(object_['foo'], int):
+        return False, "'foo' field is not an integer."
+    elif not isinstance(object_['bar'], int):
+        return False, "'foo' is not an integer."
+    else:
+        return True, None
 
-    return ProxyResponse(200, foo)
+
+def _validate_foobar_count(object_: str):
+    if len(object_) < 10:
+        return False, 'Invalid sentence: the minimun required length is 10.'
+    else:
+        return True, None

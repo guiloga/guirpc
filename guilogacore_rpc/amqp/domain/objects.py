@@ -101,7 +101,7 @@ class ClientOptions:
 
 
 class ProxyObject:
-    def __init__(self, object_):
+    def __init__(self, object_: Any = None):
         self.__object = object_
 
     @property
@@ -130,10 +130,10 @@ class ProxyRequest(MessagePropertiesMixin, ProxyObject):
 
 
 class ProxyResponse(MessagePropertiesMixin, ProxyObject):
-    def __init__(self, status_code: int = 200, *args, **kwargs):
+    def __init__(self, status_code, *args, error_message: str = None, **kwargs):
         super().__init__(*args, **kwargs)
         self._status_code = status_code
-        self._error_message = None
+        self._error_message = error_message
 
     @property
     def status_code(self):
@@ -161,7 +161,3 @@ class ProxyResponse(MessagePropertiesMixin, ProxyObject):
     def is_success(self):
         st_str = str(self._status_code)
         return st_str[:1] == '2'
-
-
-class Foo:
-    bar = 1

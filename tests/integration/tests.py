@@ -25,35 +25,44 @@ class TestProducer:
 
 class TestFixtures:
     def test_foobar_sum_ok(self):
-        x_resp = client.foobar_sum(2, 3)
+        sum_body = {'foo': 2, 'bar': 3}
+        x_resp = client.foobar_sum(sum_body)
 
         assert isinstance(x_resp, ProxyResponse)
         assert x_resp.status_code == 200
         assert x_resp.object.get('result') == 5
 
-    def test_foobar_sum_server_error(self):
-        pass
+    def test_foobar_sum_error(self):
+        sum_body = {'foo': 3}
+        x_resp = client.foobar_sum(sum_body)
 
-    def test_foobar_sum_validation_error(self):
-        pass
+        assert isinstance(x_resp, ProxyResponse)
+        assert x_resp.is_error
+        assert x_resp.status_code == 400
 
     def test_foobar_count_ok(self):
         x_resp = client.foobar_count(
-            'Hello foobar, foo bar foo bar foo bar, total foobar is 10')
+            'Hello foobar, foo bar foo bar foo bar, total foobar')
 
         assert isinstance(x_resp, ProxyResponse)
         assert x_resp.status_code == 200
         assert int(x_resp.object) == 10
+
+    def test_foobar_count_error(self):
+        x_resp = client.foobar_count(
+            'foo hello')
+
+        assert isinstance(x_resp, ProxyResponse)
+        assert x_resp.is_error
+        assert x_resp.status_code == 400
 
     def test_foobar_count_serialization_error(self):
         with pytest.raises(SerializationError):
             client.foobar_count(
                 'Bad sentence, it contains ñ and cannot be encoded into ascii')
 
-    def test_foobar_count_validation_error(self):
-        pass
-
     @pytest.mark.usefixtures('raw_obj')
+    @pytest.mark.skip
     def test_foobar_raw(self, raw_obj):
         x_resp = client.foobar_raw(raw_obj)
 

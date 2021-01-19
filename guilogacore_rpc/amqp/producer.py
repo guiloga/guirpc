@@ -6,7 +6,7 @@ import pickle
 from .domain.contracts import ProducerInterface
 from .domain.objects import ProxyRequest, ProxyResponse
 from .domain.encoding import BytesEncoder, StringEncoder
-from .serializers import BinarySerializer
+from .serializers import BinarySerializer, TextSerializer
 from .utils import import_serializer
 
 
@@ -28,7 +28,8 @@ class Producer(ProducerInterface):
 
     def _set_channel_consume(self):
         _dq = self.channel.queue_declare(queue=self.amqp_entities.queue,
-                                         exclusive=True)
+                                         exclusive=True,
+                                         auto_delete=True)
         self._response_queue = _dq.method.queue
 
         self.channel.basic_consume(
@@ -41,6 +42,7 @@ class Producer(ProducerInterface):
             # TODO: logging
             # print('Response body received %s' % body)
             self.set_x_response(body, props)
+            self.channel.queue_delete(self._response_queue)
 
     def publish(self, request: ProxyRequest) -> ProxyResponse:
         self._response = None
@@ -72,15 +74,20 @@ class Producer(ProducerInterface):
         sz = import_serializer(sz_name)
         decoded_body = BytesEncoder.decode(body)
 
+        object_, error_message = (None, None)
         if sz is not BinarySerializer:
             msg_str = StringEncoder.decode(decoded_body,
                                            codec=sz.ENCODING)
 
-            object_ = sz.deserialize(msg_str)
+            st_str = str(status)
+            if st_str[:1] in ['5', '4']:
+                error_message = TextSerializer.deserialize(msg_str)
+            else:
+                object_ = sz.deserialize(msg_str)
         else:
             object_ = pickle.loads(decoded_body)
 
-        x_resp = ProxyResponse(status, object_)
+        x_resp = ProxyResponse(status, object_, error_message=error_message)
         x_resp.set_properties(bytes_=body,
                               encoding=props.content_encoding,
                               content_type=props.content_type,
