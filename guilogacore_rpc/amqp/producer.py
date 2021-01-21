@@ -39,8 +39,6 @@ class Producer(ProducerInterface):
 
     def _handle_response(self, ch, method, props, body):
         if self._corr_id == props.correlation_id:
-            # TODO: logging
-            # print('Response body received %s' % body)
             self.set_x_response(body, props)
             self.channel.queue_delete(self._response_queue)
 

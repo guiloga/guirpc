@@ -5,6 +5,9 @@ from typing import Dict, Callable
 import pika
 
 from guilogacore_rpc.amqp.domain.contracts import ConsumerInterface
+from guilogacore_rpc.amqp.domain.encoding import StringEncoder, BytesEncoder
+from guilogacore_rpc.amqp.domain.objects import ProxyResponse
+from guilogacore_rpc.amqp.serializers import TextSerializer
 
 LOGGER = logging.getLogger('consumer')
 
@@ -157,19 +160,34 @@ class Consumer(ConsumerInterface):
 
     def on_message(self, _ch, basic_deliver, properties, body):
         # TODO: Threading/Multiprocessing
-        LOGGER.info('Received message #%s from %s: %s',
-                    basic_deliver.delivery_tag, properties.app_id, body)
-
-        # TODO: Exception Handling
         faas_name = properties.headers.get('FaaS-Name')
-        try:
+        LOGGER.info(f"Received message -> requests FaaS: {faas_name} [delivery_tag=#%s | corr_id='%s' | app_id='%s']",
+                    basic_deliver.delivery_tag, properties.correlation_id, properties.app_id)
+        self.acknowledge_message(basic_deliver.delivery_tag)
+
+        if not faas_name in self.faas_callables.keys():
+            is_err, status, err_msg = (
+                True, 400, f"[RequestError] FaaS with name '{faas_name}' is not registered")
+        else:
             faas = self.faas_callables[faas_name]
-        except:
-            # TODO: Response with status error 400 (FaaS is not registered)
-            pass
+            try:
+                x_resp = faas.__call__(body, properties)
+                is_err = False
+            except Exception as err:
+                is_err, status, err_msg = (
+                    True, 500, "[ServerError] An unexpected error occurred "
+                               "while processing the request message: "
+                               f"'{err.__class__.__name__} -> {err}'")
 
-        x_resp = faas.__call__(body, properties)
-
+        if is_err:
+            x_resp = ProxyResponse(status, error_message=err_msg)
+            resp_bytes = StringEncoder.encode(x_resp.error_message)
+            body = BytesEncoder.encode(resp_bytes)
+            x_resp.set_properties(bytes_=body,
+                                  encoding=TextSerializer.ENCODING,
+                                  content_type=TextSerializer.CONTENT_TYPE,
+                                  message_headers={'Response-Status': x_resp.status_code,
+                                                   'Response-Serializer': TextSerializer.__name__})
         _ch.basic_publish(exchange='',
                           routing_key=properties.reply_to,
                           properties=pika.BasicProperties(
@@ -178,12 +196,11 @@ class Consumer(ConsumerInterface):
                               headers=x_resp.message_headers,
                               correlation_id=properties.correlation_id),
                           body=x_resp.bytes)
-        LOGGER.info('Reply published with routing_key %s' % properties.reply_to)
-        self.acknowledge_message(basic_deliver.delivery_tag)
+        LOGGER.info('Reply published with routing_key=%s' % properties.reply_to)
 
     def acknowledge_message(self, delivery_tag):
-        LOGGER.info('Acknowledging message %s', delivery_tag)
         self._channel.basic_ack(delivery_tag)
+        LOGGER.info('Acknowledged message #%s', delivery_tag)
 
     def stop_consuming(self):
         if self._channel:

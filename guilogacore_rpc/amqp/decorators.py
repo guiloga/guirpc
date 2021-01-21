@@ -110,15 +110,12 @@ def register_faas(req_sz: Type[BaseSerializer],
 
             body = BytesEncoder.encode(resp_bytes)
 
-            x_response.add_headers(
-                {'Response-Status': x_response.status_code,
-                 'Response-Serializer': resp_sz.__name__})
-
             x_response.set_properties(
                 bytes_=body,
                 encoding=response_encoding,
                 content_type=resp_ct,
-                message_headers=x_response.message_headers)
+                message_headers={'Response-Status': x_response.status_code,
+                                 'Response-Serializer': resp_sz.__name__})
 
             return x_response
 
@@ -145,6 +142,7 @@ def faas_producer(con: ClientConnector,
     def publish_wrapper(func):
         def _publish(*args, **kwargs) -> ProxyResponse:
             x_request = func(*args, **kwargs)
+            x_request.app_id = con.config.producer_application_id or 'Unknown'
             x_request.add_headers({'FaaS-Name': faas_name})
 
             if req_sz is not BinarySerializer:

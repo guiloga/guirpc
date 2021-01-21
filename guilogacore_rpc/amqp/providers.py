@@ -27,8 +27,9 @@ class ConsumerConfiguration(AppConfigMixin):
 
 
 class ProducerConfiguration(AppConfigMixin):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, producer_application_id: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.producer_application_id = producer_application_id
 
     @classmethod
     def get_instance(cls, filepath: str):
@@ -41,6 +42,7 @@ class ProducerConfiguration(AppConfigMixin):
         return cls(
             verbose_name=config_data['client']['verbose_name'],
             root=config_data['client']['root'],
+            producer_application_id=config_data['client']['producer_application_id'],
             broker_connection=BrokerConnectionParams.create(
                 config_data['client.connection']),
             amqp_entities=AMQPEntities.create(

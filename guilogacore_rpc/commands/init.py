@@ -33,8 +33,9 @@ prefetch_count = {prefetch_count}
 
 PRODUCER_INI = """
 [client]
-verbose_name: {app_name} - RPC Producer
-root: {app_name}/client.py
+verbose_name = {app_name} - RPC Producer
+root = {app_name}/client.py
+producer_application_id = {producer_id}
 
 [client.connection]
 host = {host}
@@ -70,7 +71,8 @@ def createconfig(name, **options):
 
     try:
         if client_flag:
-            values = {**CONFIG_DEFAULTS['producer_config']['amqp_entities'],
+            values = {**CONFIG_DEFAULTS['producer_config']['globals'],
+                      **CONFIG_DEFAULTS['producer_config']['amqp_entities'],
                       **CONFIG_DEFAULTS['producer_config']['options']}
             _create_config_file(name, PRODUCER_INI, values, out_dir)
         else:
@@ -78,7 +80,7 @@ def createconfig(name, **options):
                       **CONFIG_DEFAULTS['consumer_config']['options']}
             _create_config_file(name, CONSUMER_INI, values, out_dir)
     except Exception as error:
-        print(f'An error occurred: {error}')
+        print(f"An error occurred: '{error.__class__.__name__} -> {error}'")
 
 
 def _init_cmd_handler(fixture, work_dir, app_name, config_ini, options):

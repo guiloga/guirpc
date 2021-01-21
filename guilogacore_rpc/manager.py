@@ -14,8 +14,8 @@ def amqp_manager():
 
 
 cli_manager = click.CommandCollection(
-    help="##### guilogacore-rpc (alias 'gui-rpc') #####\n\n"
-         "This is a command line manager to start, run and operate wih consumer/producers.",
+    help="##### guilogacore-rpc (alias 'guirpc') #####\n\n"
+         "This is a command line manager to start, run and test RPC consumers and producers.",
     sources=[amqp_manager, ])
 
 
@@ -46,6 +46,7 @@ def init_consumer(app_name, **options):
 
 @amqp_manager.command('initproducer')
 @click.argument('app_name')
+@click.option('-p', '--producer-id', help='the application producer id.', default='')
 @click.option('-E', '--exchange', help='the exchange name.', default='rpc_gateway')
 @click.option('-r', '--routing-key', help='the routing key.', default='my_queue')
 @click.option('-C', '--consumer', help='the response consumer.', default='')

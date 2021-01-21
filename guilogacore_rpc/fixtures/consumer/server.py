@@ -21,15 +21,16 @@ def foobar_sum(x_request):
 
     is_valid, err_msg = _validate_foobar_sum(sum_body)
     if not is_valid:
-        return ProxyResponse(400, error_message=f'ValidationError: {err_msg}')
+        return ProxyResponse(400, error_message=f'[ValidationError] {err_msg}')
 
     try:
         resp_obj = {'result': sum_body['foo'] + sum_body['bar']}
         response = ProxyResponse(200, object_=resp_obj)
     except Exception as err:
         response = ProxyResponse(
-            500, error_message="ServerError: An unexpected error occurred "
-                               f"while processing the request message.\n {err}")
+            500, error_message="[ServerError] An unexpected error occurred "
+                               f"while processing the request message: "
+                               f"'{err.__class__.__name__} -> {err}'")
     return response
 
 
@@ -51,7 +52,7 @@ def foobar_count(x_request):
 
     is_valid, err_msg = _validate_foobar_count(normalized)
     if not is_valid:
-        return ProxyResponse(400, error_message=f'ValidationError: {err_msg}')
+        return ProxyResponse(400, error_message=f'[ValidationError] {err_msg}')
 
     try:
         count = len(normalized.split('foo')) - 1
@@ -60,8 +61,9 @@ def foobar_count(x_request):
         response = ProxyResponse(200, object_=str(count))
     except Exception as err:
         response = ProxyResponse(
-            500, error_message="ServerError: An unexpected error occurred "
-                               f"while processing the request message.\n {err}")
+            500, error_message="[ServerError] An unexpected error occurred "
+                               f"while processing the request message: "
+                               f"'{err.__class__.__name__} -> {err}'")
     return response
 
 

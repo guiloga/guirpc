@@ -61,6 +61,9 @@ class TestFixtures:
             client.foobar_count(
                 'Bad sentence, it contains ñ and cannot be encoded into ascii')
 
+    def test_error_faas_not_registered(self):
+        pass
+
     @pytest.mark.usefixtures('raw_obj')
     @pytest.mark.skip
     def test_foobar_raw(self, raw_obj):
