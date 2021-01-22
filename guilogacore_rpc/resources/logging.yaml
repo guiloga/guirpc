@@ -1,0 +1,16 @@
+version: 1
+disable_existing_loggers: True
+formatters:
+  simpleMessage:
+    format: '%(asctime)s [%(levelname)s] %(message)s'
+handlers:
+  serverStream:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simpleMessage
+    stream: ext://sys.stdout
+loggers:
+  rpcServer:
+    level: INFO
+    handlers: [serverStream]
+    propagate: False

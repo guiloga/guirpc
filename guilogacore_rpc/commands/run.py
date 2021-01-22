@@ -1,14 +1,34 @@
 from importlib import util
 import logging
-import traceback
+import logging.config
+import os
+import yaml
 
 from guilogacore_rpc.amqp.domain.exceptions import ConsumerConfigurationError
 from guilogacore_rpc.amqp.consumer import ProxyReconnectConsumer
 from guilogacore_rpc.amqp.providers import ConsumerConfiguration
 
-LOG_FORMAT = '%(asctime)s [%(levelname)s] %(message)s'
+RESOURCES_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), 'resources')
 
 FaaS_MODULE = None
+
+
+def _read_log_config():
+    filename = os.path.join(RESOURCES_DIR, 'logging.yaml')
+    with open(filename, 'r') as file:
+        log_config = yaml.safe_load(file)
+    return log_config
+
+
+def _configure_logging():
+    logging.config.dictConfig(_read_log_config())
+
+    logging.addLevelName(logging.CRITICAL, 'critical')
+    logging.addLevelName(logging.ERROR, 'error')
+    logging.addLevelName(logging.WARNING, 'warning')
+    logging.addLevelName(logging.INFO, 'info')
+    logging.addLevelName(logging.DEBUG, 'debug')
 
 
 def _import_faas_module(app_file):
@@ -45,8 +65,8 @@ class ConfigININotProvidedError(Exception):
 
 
 def runconsumer(with_config, **options):
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    logger = logging.getLogger('consumer')
+    _configure_logging()
+    logger = logging.getLogger('rpcServer')
 
     config_filepath = with_config
     if not config_filepath:
@@ -65,7 +85,7 @@ def runconsumer(with_config, **options):
             amqp_entities=cs_conf.amqp_entities,
             **cs_conf.options.as_dict)
 
-        logger.info('*' * 12 + f' {cs_conf.verbose_name} ' + '*' * 12)
+        logger.info('*' * 16 + f' {cs_conf.verbose_name} ' + '*' * 16)
         for name in callables.keys():
             logger.info('#' * 3 + ' registered FaaS: %s' % name)
         consumer.run()

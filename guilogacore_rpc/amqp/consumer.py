@@ -9,7 +9,7 @@ from guilogacore_rpc.amqp.domain.encoding import StringEncoder, BytesEncoder
 from guilogacore_rpc.amqp.domain.objects import ProxyResponse
 from guilogacore_rpc.amqp.serializers import TextSerializer
 
-LOGGER = logging.getLogger('consumer')
+LOGGER = logging.getLogger('rpcServer')
 
 
 class Consumer(ConsumerInterface):
@@ -45,7 +45,9 @@ class Consumer(ConsumerInterface):
         return self._should_reconnect
 
     def connect(self):
-        LOGGER.info('Connecting to %s', self.amqp_url)
+        passw = self.amqp_url.split('@')[0].split(':')[-1]
+        LOGGER.info('Connecting to %s', self.amqp_url.replace(':%s' % passw, ':' + '*'*8))
+
         return pika.SelectConnection(
             parameters=pika.URLParameters(self.amqp_url),
             on_open_callback=self.on_connection_open,
@@ -196,7 +198,7 @@ class Consumer(ConsumerInterface):
                               headers=x_resp.message_headers,
                               correlation_id=properties.correlation_id),
                           body=x_resp.bytes)
-        LOGGER.info('Reply published with routing_key=%s' % properties.reply_to)
+        LOGGER.info("Reply published with routing_key='%s'" % properties.reply_to)
 
     def acknowledge_message(self, delivery_tag):
         self._channel.basic_ack(delivery_tag)
