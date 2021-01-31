@@ -117,6 +117,7 @@ docs/build/
 # other
 my_sum/
 test_publish.py
+test_script.py
 guirpc/foobar/
 guirpc/foobar.ini
 foobar*

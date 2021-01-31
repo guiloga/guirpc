@@ -30,7 +30,7 @@ official [documentation](https://fakedocguirpc.com).
 Documentation of this project is created with [Sphinx](https://www.sphinx-doc.org/en/master/index.html), to build it
 run:
 
-```bash
+```shell script
 pip install -U sphinx sphinx-bootstrap-theme
 sphinx-build -b html docs/source/ docs/build/
 ```
