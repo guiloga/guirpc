@@ -49,8 +49,12 @@ and run a configured RPC server/consumer that will respond on messages received
 trough **RabbitMQ** back to a connected client/producer.
 
 
-Transport layer
----------------
+Transport layers
+----------------
+.. image:: _static/img/rabbitmq.png
+   :height: 94
+   :width: 214
+   :alt: RabbitMQ logo
 
 .. note:: **RabbitMQ** is the unique supported message broker as transport layer in this project (for now).
 

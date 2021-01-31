@@ -3,8 +3,10 @@ body {
 }
 
 .footer {
-  background-color: #e6e6e6;
-  border-color: #999999;
+  margin-top: 28px;
+  background-color: #f8f8f8;
+  border-color: #e7e7e7;
+  border-width: 4px 1px 0 1px;
 }
 
 .title-note {
@@ -22,4 +24,10 @@ h1, .h1, h2, .h2 {
 h3, .h3 {
   margin-top: 26px;
   margin-bottom: 12px;
+}
+
+.alert-info {
+    background-color: #75caeb;
+    border-color: #40b5e3;
+    color: #0d4459 !important;
 }
