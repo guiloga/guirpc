@@ -68,12 +68,12 @@ def create_config(name, **options):
     createconfig(name, **options)
 
 
-@amqp_manager.command('publish')
+@amqp_manager.command('publishone')
 @click.argument('exchange')
 @click.argument('routing_key')
 @click.argument('message')
-def rpc_call(exchange, routing_key, message):
-    """Sends a single RPC call with specified routing."""
+def publish_one(exchange, routing_key, message):
+    """Sends a single RPC call with specified routing. (Not implemented yet)"""
     pass
 
 
