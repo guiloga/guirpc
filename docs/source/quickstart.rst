@@ -95,8 +95,8 @@ Make an RPC request
 ===================
 | Before moving to make a first RPC request we need to setup some requirements, let's dive in.
 
-The transport layer
--------------------
+Message Broker
+--------------
 | To put everything to work first of all we are going to run a local RabbitMQ server using docker:
 
 ::

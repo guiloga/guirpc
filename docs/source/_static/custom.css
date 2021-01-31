@@ -1,5 +1,5 @@
 body {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .footer {
@@ -14,20 +14,25 @@ body {
   color: #666666;
 }
 
-
 h1, .h1, h2, .h2 {
   margin-top: 46px;
   margin-bottom: 12px;
 }
 
-
 h3, .h3 {
   margin-top: 26px;
   margin-bottom: 12px;
+  text-decoration: underline;
 }
 
 .alert-info {
     background-color: #75caeb;
     border-color: #40b5e3;
-    color: #0d4459 !important;
+    color: #0a3343 !important;
+}
+
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+    text-decoration: none;
+    color: inherit;
+    background-color: #f8f8f8;
 }
