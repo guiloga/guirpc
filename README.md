@@ -19,24 +19,29 @@ It also provides a command line manager to handle operations that will essential
 * Python version [**3.8**](https://www.python.org/downloads/release/python-380/) (with [pip](https://pip.pypa.io/en/stable/))
 
 ## Documentation ###
+Package is distributed under [PyPi](https://pypi.org/). Take a look at the official [documentation](https://fakedocguirpc.com).
 
-Documentation for the package is not available yet.
+Documentation of this project is created with [Sphinx](https://www.sphinx-doc.org/en/master/index.html), to build it run:
+```bash
+pip install -U sphinx sphinx-bootstrap-theme
+sphinx-build -b html docs/source/ docs/build/
+```
 
 ## Tests
 Tests are built with [pytest](https://docs.pytest.org/en/stable/) and run with docker.
 In order tu run it be sure last that current stable versions of docker and docker-compose are installed.
 
 - First, build the *foobar* consumer service and run it alongside a RabbitMQ server(optionally with the management plugin):
-```
+```shell script
 docker-compose up --build -d rabbitmq consumer
 ```
 - Run all **unit** and **integration** tests:
-```
+```shell script
 docker-compose run test
 ```
 
 Optionally, run code static analysis (with flake8):
-```
+```shell script
 docker-compose run static_analysis
 ```
 

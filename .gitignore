@@ -111,6 +111,9 @@ media/
 
 .idea/
 
+# Docs
+docs/build/
+
 # other
 my_sum/
 test_publish.py
