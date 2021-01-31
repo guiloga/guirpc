@@ -100,7 +100,7 @@ class ClientConnector:
 
 def import_serializer(class_name):
     module = importlib.import_module(
-        'guilogacore_rpc.amqp.serializers')
+        'guirpc.amqp.serializers')
     try:
         class_ = getattr(module, class_name)
     except AttributeError as err:

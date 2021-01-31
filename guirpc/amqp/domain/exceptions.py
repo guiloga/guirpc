@@ -12,6 +12,6 @@ class SerializationError(Exception):
     def __str__(self):
         return ('An error occurred while serializing object ' +
                 '({0}) "{1}" with serializer: {2}\n'.format(type(self.object),
-                                                           self.object,
-                                                           self.sz) +
+                                                            self.object,
+                                                            self.sz) +
                 f'*** {self.error.__class__.__name__} ***\n{self.error}')

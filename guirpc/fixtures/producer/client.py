@@ -1,9 +1,7 @@
-from typing import Any
-
-from guilogacore_rpc.amqp.domain.objects import ProxyRequest
-from guilogacore_rpc.amqp.decorators import faas_producer
-from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer
-from guilogacore_rpc.amqp.utils import ClientConnector
+from guirpc.amqp.decorators import faas_producer
+from guirpc.amqp.domain import ProxyRequest
+from guirpc.amqp.serializers import JsonSerializer, TextSerializer
+from guirpc.amqp.utils import ClientConnector
 
 CONNECTOR = ClientConnector()
 

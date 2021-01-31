@@ -1,6 +1,6 @@
 from pytest import fixture
 
-from guilogacore_rpc.amqp.utils import ClientConnector
+from guirpc.amqp.utils import ClientConnector
 
 
 @fixture(scope='session')

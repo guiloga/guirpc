@@ -1,13 +1,14 @@
-from typing import Type
 import pickle
+from typing import Type
+
 from pika import BasicProperties
 
 from .domain.contracts import BaseSerializer
 from .domain.encoding import StringEncoder, BytesEncoder
 from .domain.exceptions import SerializationError
 from .domain.objects import ProxyRequest, ProxyResponse
-from .serializers import TextSerializer, BinarySerializer
 from .producer import Producer
+from .serializers import TextSerializer, BinarySerializer
 from .utils import ClientConnector
 
 
@@ -139,6 +140,7 @@ def faas_producer(con: ClientConnector,
     :return: The function wrapper that calls the decorated function
         passing trough a Producer publish call returning a ProxyResponse.
     """
+
     def publish_wrapper(func):
         def _publish(*args, **kwargs) -> ProxyResponse:
             x_request = func(*args, **kwargs)

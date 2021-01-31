@@ -1,12 +1,13 @@
-from importlib import util
 import logging
 import logging.config
 import os
+from importlib import util
+
 import yaml
 
-from guilogacore_rpc.amqp.domain.exceptions import ConsumerConfigurationError
-from guilogacore_rpc.amqp.consumer import ProxyReconnectConsumer
-from guilogacore_rpc.amqp.providers import ConsumerConfiguration
+from guirpc.amqp.consumer import ProxyReconnectConsumer
+from guirpc.amqp.domain.exceptions import ConsumerConfigurationError
+from guirpc.amqp.providers import ConsumerConfiguration
 
 RESOURCES_DIR = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'resources')
@@ -60,8 +61,8 @@ def find_registered_faas(app_file):
 class ConfigININotProvidedError(Exception):
     def __str__(self):
         return 'The .ini configuration file has not been provided. ' \
-            'Set CONSUMER_CONFIG_FILEPATH environment variable ' \
-            'or provide it using the "--with-config" option.'
+               'Set CONSUMER_CONFIG_FILEPATH environment variable ' \
+               'or provide it using the "--with-config" option.'
 
 
 def runconsumer(with_config, **options):

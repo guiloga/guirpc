@@ -1,7 +1,6 @@
-from .domain.contracts import BaseSerializer
-from .domain.objects import ProxyResponse
-
 import json
+
+from .domain.contracts import BaseSerializer
 
 
 class JsonSerializer(BaseSerializer):

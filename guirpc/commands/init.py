@@ -1,7 +1,7 @@
 import configparser
 import os
-from shutil import copytree, rmtree, ignore_patterns
 import time
+from shutil import copytree, rmtree, ignore_patterns
 
 from . import read_config_defaults
 

@@ -1,10 +1,10 @@
 import pytest
 
-from guilogacore_rpc.amqp.domain.exceptions import SerializationError
-from guilogacore_rpc.amqp.domain.objects import ProxyResponse
-from guilogacore_rpc.amqp.producer import Producer
-from guilogacore_rpc.amqp.utils import get_producer_config, ClientConnector
-from guilogacore_rpc.fixtures.producer import client
+from guirpc.amqp.domain import ProxyResponse
+from guirpc.amqp.domain.exceptions import SerializationError
+from guirpc.amqp.producer import Producer
+from guirpc.amqp.utils import get_producer_config, ClientConnector
+from guirpc.fixtures.producer import client
 
 
 class TestProducer:

@@ -1,11 +1,11 @@
+import pickle
 from uuid import uuid4
 
 import pika
-import pickle
 
 from .domain.contracts import ProducerInterface
-from .domain.objects import ProxyRequest, ProxyResponse
 from .domain.encoding import BytesEncoder, StringEncoder
+from .domain.objects import ProxyRequest, ProxyResponse
 from .serializers import BinarySerializer, TextSerializer
 from .utils import import_serializer
 
@@ -15,6 +15,7 @@ class Producer(ProducerInterface):
     This is a an RPC client/producer that will send requests and block until
     receiving back a response through a unique channel.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._response_queue = None

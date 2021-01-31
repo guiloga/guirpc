@@ -5,6 +5,7 @@ class StringEncoder:
     """
     String to Bytes encoder/decoder.
     """
+
     @classmethod
     def encode(cls, stream_str: str, codec='ascii') -> bytes:
         return stream_str.encode(encoding=codec)

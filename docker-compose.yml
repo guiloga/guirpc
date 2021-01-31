@@ -18,8 +18,8 @@ services:
       - rabbitmq
   test:
     image: guiloga/foobar_consumer
-    command: /bin/sh -c "while ! nc -z rabbitmq:15672; do sleep 1; done; sleep 30; python -m pytest"
-    container_name: guilogacore_rpc_test
+    command: /bin/sh -c "while ! nc -z rabbitmq:15672; do sleep 1; done; sleep 5; python -m pytest"
+    container_name: guirpc_test
     environment:
       - PYTHONUNBUFFERED=1
     links:
@@ -29,6 +29,6 @@ services:
   static_analysis:
     image: guiloga/foobar_consumer
     command: python -m flake8 --max-complexity 10 --ignore E501
-    container_name: guilogacore_rpc_sty
+    container_name: guirpc_sty
     environment:
       - PYTHONUNBUFFERED=1

@@ -1,13 +1,16 @@
-# guilogacore-rpc
+# guirpc
+
 ### RPC core package to build a FaaS-like application service
+
 ____
-[![Build Status](https://www.travis-ci.com/guiloga/guilogacore-rpc.svg?branch=master)](https://www.travis-ci.com/guiloga/guilogacore-rpc)
+[![Build Status](https://www.travis-ci.com/guiloga/guirpc.svg?branch=master)](https://www.travis-ci.com/guiloga/guirpc)
 
-This package implements core functionality that is compliant with the standard **AMQP**.
-It provides an interface with some decorators, encoders, serializers and in short all the surrounded layers for easily build,
-configure and run an **RPC server** as it makes up as a **FaaS-like application**.
+This package implements core functionality that is compliant with the standard **AMQP**. It provides an interface with
+some decorators, encoders, serializers and in short all the surrounded layers for easily build, configure and run an **
+RPC server** as it makes up as a **FaaS-like application**.
 
-It also provides a command line manager to handle operations that will essentially allow to setup and run a configured RPC server/consumer that will respond on messages received trough **RabbitMQ** back to a connected client/producer.
+It also provides a command line manager to handle operations that will essentially allow to setup and run a configured
+RPC server/consumer that will respond on messages received trough **RabbitMQ** back to a connected client/producer.
 
 ## Built With
 
@@ -16,31 +19,42 @@ It also provides a command line manager to handle operations that will essential
 
 ## Prerequisites ###
 
-* Python version [**3.8**](https://www.python.org/downloads/release/python-380/) (with [pip](https://pip.pypa.io/en/stable/))
+* Python version [**3.8**](https://www.python.org/downloads/release/python-380/) (
+  with [pip](https://pip.pypa.io/en/stable/))
 
 ## Documentation ###
-Package is distributed under [PyPi](https://pypi.org/). Take a look at the official [documentation](https://fakedocguirpc.com).
 
-Documentation of this project is created with [Sphinx](https://www.sphinx-doc.org/en/master/index.html), to build it run:
+Package is distributed under [PyPi](https://pypi.org/). Take a look at the
+official [documentation](https://fakedocguirpc.com).
+
+Documentation of this project is created with [Sphinx](https://www.sphinx-doc.org/en/master/index.html), to build it
+run:
+
 ```bash
 pip install -U sphinx sphinx-bootstrap-theme
 sphinx-build -b html docs/source/ docs/build/
 ```
 
 ## Tests
-Tests are built with [pytest](https://docs.pytest.org/en/stable/) and run with docker.
-In order tu run it be sure last that current stable versions of docker and docker-compose are installed.
 
-- First, build the *foobar* consumer service and run it alongside a RabbitMQ server(optionally with the management plugin):
+Tests are built with [pytest](https://docs.pytest.org/en/stable/) and run with docker. In order tu run it be sure last
+that current stable versions of docker and docker-compose are installed.
+
+- First, build the *foobar* consumer service and run it alongside a RabbitMQ server(optionally with the management
+  plugin):
+
 ```shell script
 docker-compose up --build -d rabbitmq consumer
 ```
+
 - Run all **unit** and **integration** tests:
+
 ```shell script
 docker-compose run test
 ```
 
 Optionally, run code static analysis (with flake8):
+
 ```shell script
 docker-compose run static_analysis
 ```
@@ -48,11 +62,14 @@ docker-compose run static_analysis
 ### Build
 
 Build the distribution:
+
 ```shell script
 python -m pip install -U pep517
 python -m pep517.build .
 ```
+
 For development, create a link file which associates source code with your interpreter site-packages directory:
+
 ```shell script
 touch setup.py
 echo "import setuptools
@@ -60,10 +77,12 @@ setuptools.setup()" > setup.py
 # Then do
 pip install --editable .
 ```
+
 Upload it yo PyPi:
 **twine**
 
 ## Resources
+
 * [RFC2045](https://tools.ietf.org/html/rfc2045.html) - (MIME) Part One: Format of Internet Message Bodies.
 
 ## Authors

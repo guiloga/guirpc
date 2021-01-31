@@ -1,6 +1,6 @@
-from guilogacore_rpc.amqp.domain.objects import ProxyResponse
-from guilogacore_rpc.amqp.decorators import register_faas
-from guilogacore_rpc.amqp.serializers import JsonSerializer, TextSerializer
+from guirpc.amqp.decorators import register_faas
+from guirpc.amqp.domain import ProxyResponse
+from guirpc.amqp.serializers import JsonSerializer, TextSerializer
 
 
 @register_faas(req_sz=JsonSerializer, resp_sz=JsonSerializer)

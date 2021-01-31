@@ -2,12 +2,13 @@ import functools
 import logging
 import time
 from typing import Dict, Callable
+
 import pika
 
-from guilogacore_rpc.amqp.domain.contracts import ConsumerInterface
-from guilogacore_rpc.amqp.domain.encoding import StringEncoder, BytesEncoder
-from guilogacore_rpc.amqp.domain.objects import ProxyResponse
-from guilogacore_rpc.amqp.serializers import TextSerializer
+from guirpc.amqp.domain import ProxyResponse
+from guirpc.amqp.domain.contracts import ConsumerInterface
+from guirpc.amqp.domain.encoding import StringEncoder, BytesEncoder
+from guirpc.amqp.serializers import TextSerializer
 
 LOGGER = logging.getLogger('rpcServer')
 
@@ -46,7 +47,7 @@ class Consumer(ConsumerInterface):
 
     def connect(self):
         passw = self.amqp_url.split('@')[0].split(':')[-1]
-        LOGGER.info('Connecting to %s', self.amqp_url.replace(':%s' % passw, ':' + '*'*8))
+        LOGGER.info('Connecting to %s', self.amqp_url.replace(':%s' % passw, ':' + '*' * 8))
 
         return pika.SelectConnection(
             parameters=pika.URLParameters(self.amqp_url),

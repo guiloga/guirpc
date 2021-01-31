@@ -12,5 +12,5 @@ handlers:
 loggers:
   rpcServer:
     level: INFO
-    handlers: [serverStream]
+    handlers: [ serverStream ]
     propagate: False

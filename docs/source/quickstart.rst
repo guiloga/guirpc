@@ -22,7 +22,7 @@ To install it directly from source:
 
 ::
 
-  git clone https://github.com/guiloga/guilogacore-rpc
+  git clone https://github.com/guiloga/guirpc
 
   touch setup.py
   echo "import setuptools \

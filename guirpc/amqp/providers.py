@@ -1,5 +1,5 @@
-from .domain.objects import BrokerConnectionParams, AMQPEntities, ServerOptions, ClientOptions
 from .domain.mixins import AppConfigMixin
+from .domain.objects import BrokerConnectionParams, AMQPEntities, ServerOptions, ClientOptions
 
 
 class ConsumerConfiguration(AppConfigMixin):

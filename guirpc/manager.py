@@ -2,8 +2,8 @@ import os
 
 import click
 
-from guilogacore_rpc.commands.init import initconsumer, initproducer, createconfig
-from guilogacore_rpc.commands.run import runconsumer
+from guirpc.commands.init import initconsumer, initproducer, createconfig
+from guirpc.commands.run import runconsumer
 
 WORKING_DIR = os.getcwd()
 
@@ -14,7 +14,7 @@ def amqp_manager():
 
 
 cli_manager = click.CommandCollection(
-    help="##### guilogacore-rpc (alias 'guirpc') #####\n\n"
+    help="##### guirpc (alias 'guirpc') #####\n\n"
          "This is a command line manager to start, run and test RPC consumers and producers.",
     sources=[amqp_manager, ])
 

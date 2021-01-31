@@ -4,11 +4,11 @@ FROM python:3.6-alpine
 LABEL maintainer="Guillem López Garcia (wyl.loga@gmail.com)"
 LABEL version="1.0"
 LABEL description="It runs an RPC consumer and setup a producer \
-for testing purposes of the guilogacore_rpc package."
+for testing purposes of the guirpc package."
 
 # Environment
 ENV ROOT_DIR=/root
-ENV PACKAGE_NAME=guilogacore_rpc
+ENV PACKAGE_NAME=guirpc
 ENV CMD_MANAGER=$ROOT_DIR/$PACKAGE_NAME/manager.py
 ENV CONSUMER_CONFIG_FILEPATH="foobar.ini"
 ENV PRODUCER_CONFIG_FILEPATH="foobar_client.ini"
