@@ -1,6 +1,9 @@
-=============================
- **guirpc** *python package*
-=============================
+=======
+ guirpc
+=======
+| Is a **Python** RPC package to build and run FaaS-like application service.
+| It facilitates the creation of an consumer or a producer, as well as an abstraction layer for the transmission
+  of messages over a connected message broker server.
 
 .. rst-class:: title-note
 
