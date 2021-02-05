@@ -5,12 +5,12 @@
 ____
 [![Build Status](https://www.travis-ci.com/guiloga/guirpc.svg?branch=master)](https://www.travis-ci.com/guiloga/guirpc)
 
-This package implements core functionality that is compliant with the standard **AMQP**. It provides an interface with
-some decorators, encoders, serializers and in short all the surrounded layers for easily build, configure and run an **
-RPC server** as it makes up as a **FaaS-like application**.
+| Is a **Python** RPC package to build and run FaaS-like application service.
+| It facilitates the creation of an consumer or a producer, as well as an abstraction layer for the transmission
+  of messages over a connected message broker server.
 
-It also provides a command line manager to handle operations that will essentially allow to setup and run a configured
-RPC server/consumer that will respond on messages received trough **RabbitMQ** back to a connected client/producer.
+It provides an abstraction layer with some decorators, encoders, serializers and in short all the surrounded layers 
+for easily build, configure and run an **RPC server** as it makes up as a **FaaS-like application**.
 
 ## Built With
 
@@ -19,19 +19,19 @@ RPC server/consumer that will respond on messages received trough **RabbitMQ** b
 
 ## Prerequisites ###
 
-* Python version [**3.8**](https://www.python.org/downloads/release/python-380/) (
+* Python version [**3.6**](https://www.python.org/downloads/release/python-360/) (
   with [pip](https://pip.pypa.io/en/stable/))
 
 ## Documentation ###
 
 Package is distributed under [PyPi](https://pypi.org/). Take a look at the
-official [documentation](https://fakedocguirpc.com).
+official [documentation](https://guirpc.readthedocs.io/en/latest/).
 
 Documentation of this project is created with [Sphinx](https://www.sphinx-doc.org/en/master/index.html), to build it
 run:
 
 ```shell script
-pip install -U sphinx sphinx-bootstrap-theme
+pip install -U docs/requirements.txt
 sphinx-build -b html docs/source/ docs/build/
 ```
 
@@ -59,15 +59,6 @@ Optionally, run code static analysis (with flake8):
 docker-compose run static_analysis
 ```
 
-### Build
-
-Build the distribution:
-
-```shell script
-python -m pip install -U pep517
-python -m pep517.build .
-```
-
 For development, create a link file which associates source code with your interpreter site-packages directory:
 
 ```shell script
@@ -77,9 +68,6 @@ setuptools.setup()" > setup.py
 # Then do
 pip install --editable .
 ```
-
-Upload it yo PyPi:
-**twine**
 
 ## Resources
 
