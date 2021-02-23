@@ -2,6 +2,7 @@ import pickle
 from typing import Type
 
 from pika import BasicProperties
+from pika.exceptions import StreamLostError
 
 from .domain.contracts import BaseSerializer
 from .domain.encoding import StringEncoder, BytesEncoder
@@ -164,7 +165,7 @@ def faas_producer(con: ClientConnector,
             x_request.content_type = req_sz.CONTENT_TYPE
             x_request.encoding = req_sz.ENCODING
 
-            producer = Producer(con.bck_con, con.config.amqp_entities)
+            producer = _new_producer(con)
             x_response = producer.publish(x_request)
 
             return x_response
@@ -172,3 +173,16 @@ def faas_producer(con: ClientConnector,
         return _publish
 
     return publish_wrapper
+
+
+def _new_producer(connector):
+    def _get():
+        return Producer(connector.bck_con, connector.config.amqp_entities)
+
+    try:
+        producer = _get()
+    except StreamLostError:
+        connector.reload()
+        producer = _get()
+
+    return producer
