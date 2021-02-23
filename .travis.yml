@@ -42,6 +42,8 @@ jobs:
       script:
         - docker load --input consumer_img.tar.gz
         - docker-compose up --no-build -d rabbitmq consumer
+        - sleep 1m
+        - docker logs foobar_consumer
         - docker-compose run test
 
     - stage: static_analysis
