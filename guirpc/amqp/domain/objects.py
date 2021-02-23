@@ -1,33 +1,41 @@
+import os
 from typing import Any
 
+from .exceptions import AMQPConnectionURINotSetError, InvalidAMQPConnectionURI
 from .mixins import MessagePropertiesMixin
 
 
 class BrokerConnectionParams:
-    def __init__(self, host, port, user, password):
+    def __init__(self, host, port, user, password, vhost):
         self.host = host
         self.port = port
         self.user = user
         self.password = password
+        self.vhost = vhost
 
     @classmethod
-    def create(cls, object_data: dict):
+    def create(cls, object_data: dict = None):
         """
         Factory function to create an instance from dict data.
 
         :param dict object_data: connection data.
         :rtype: BrokerConnectionParams
         """
-        return cls(
-            host=object_data.get('host'),
-            port=object_data.get('port'),
-            user=object_data.get('user'),
-            password=object_data.get('password'),
-        )
+        con_uri = os.getenv('AMQP_URI')
+        if con_uri:
+            values = _parse_amqp_uri(con_uri)
+        else:
+            if not object_data:
+                raise AMQPConnectionURINotSetError()
+            values = [object_data.get('host'), object_data.get('port'),
+                      object_data.get('user'), object_data.get('password'),
+                      object_data.get('vhost', '%2F'),]
+
+        return cls(*values)
 
     @property
     def amqp_url(self):
-        return f"amqp://{self.user}:{self.password}@{self.host}:{self.port}/%2F"
+        return f"amqp://{self.user}:{self.password}@{self.host}:{self.port}/{self.vhost}"
 
 
 class AMQPEntities:
@@ -165,3 +173,15 @@ class ProxyResponse(MessagePropertiesMixin, ProxyObject):
     def is_success(self):
         st_str = str(self._status_code)
         return st_str[:1] == '2'
+
+
+def _parse_amqp_uri(uri):
+    try:
+        sp_url = uri.split('@')
+        p1 = sp_url[0].replace('amqp://', '').split(':')
+        p2 = sp_url[-1].split('/') if len(sp_url) > 1 else '%2F'
+        p3 = p2[0].split(':')
+    except Exception:
+        raise InvalidAMQPConnectionURI(uri)
+
+    return [*p3, *p1, p2[-1]]

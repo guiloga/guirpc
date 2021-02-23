@@ -6,7 +6,7 @@ from importlib import util
 import yaml
 
 from guirpc.amqp.consumer import ProxyReconnectConsumer
-from guirpc.amqp.domain.exceptions import ConsumerConfigurationError
+from guirpc.amqp.domain.exceptions import AMQPConnectionURINotSetError, ConsumerConfigurationError
 from guirpc.amqp.providers import ConsumerConfiguration
 
 RESOURCES_DIR = os.path.join(
@@ -75,6 +75,8 @@ def runconsumer(with_config, **options):
 
     try:
         cs_conf = ConsumerConfiguration.get_instance(config_filepath)
+    except AMQPConnectionURINotSetError as err:
+        raise err
     except Exception:
         raise ConsumerConfigurationError
 

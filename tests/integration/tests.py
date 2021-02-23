@@ -61,9 +61,6 @@ class TestFixtures:
             client.foobar_count(
                 'Bad sentence, it contains ñ and cannot be encoded into ascii')
 
-    def test_error_faas_not_registered(self):
-        pass
-
     @pytest.mark.usefixtures('raw_obj')
     @pytest.mark.skip
     def test_foobar_raw(self, raw_obj):
@@ -74,10 +71,20 @@ class TestFixtures:
         assert isinstance(x_resp.object, raw_obj.__class__)
         assert raw_obj != x_resp.object
 
+    def test_error_faas_not_registered(self):
+        pass
+
+    def test_connection_is_open_decorator(self):
+        client.CONNECTOR.close_all_connections()
+        assert client.CONNECTOR.bck_con.is_closed
+        x_resp = client.foobar_count()
+        assert client.CONNECTOR.bck_con.is_open
+
 
 class TestClientConnector:
     @pytest.mark.usefixtures('connector')
     def test_creation(self, connector):
+        connector.reload()
         connector2 = ClientConnector()
 
         assert connector.is_initialized
