@@ -12,12 +12,14 @@ from .serializers import TextSerializer, BinarySerializer
 from .utils import ClientConnector
 
 
-def _connection_is_open(func):
-    def wrapper(*args, **kwargs):
-        client_con = args[0] if len(args) > 0 else kwargs['con']
-        if client_con.is_reload_required:
-            client_con.reload()
-        return func(*args, **kwargs)
+def connection_is_open(client_con):
+    def wrapper(func):
+        def check_if_reload_required_hook(*args, **kwargs):
+            if client_con.is_reload_required:
+                client_con.reload()
+            return func(*args, **kwargs)
+
+        return check_if_reload_required_hook
 
     return wrapper
 
@@ -125,7 +127,6 @@ def register_faas(req_sz: Type[BaseSerializer],
     return exec_wrapper
 
 
-@_connection_is_open
 def faas_producer(con: ClientConnector,
                   faas_name: str,
                   req_sz: Type[BaseSerializer]):
@@ -140,8 +141,8 @@ def faas_producer(con: ClientConnector,
     :return: The function wrapper that calls the decorated function
         passing trough a Producer publish call returning a ProxyResponse.
     """
-
     def publish_wrapper(func):
+        @connection_is_open(con)
         def _publish(*args, **kwargs) -> ProxyResponse:
             x_request = func(*args, **kwargs)
             x_request.app_id = con.config.producer_application_id or 'Unknown'

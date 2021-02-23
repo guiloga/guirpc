@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar
 
+from .exceptions import OpeningChannelError
 from .mixins import AMQPMixin
 from .objects import ProxyObject
 
@@ -12,7 +13,6 @@ def channel_is_open(func):
     """
     Checks if he Producer channel is opened, else opens a new one.
     """
-
     def wrapper(ins):
         if not ins.channel.is_open:
             new_ch = ins.open_new_channel()
@@ -72,6 +72,9 @@ class ProducerInterface(AMQPMixin, ABC):
         self.__channel = ch_
 
     def open_new_channel(self) -> Channel:
+        if not self.connection or not self.connection.is_open:
+            raise OpeningChannelError(self.connection)
+
         return self.connection.channel()
 
     @abstractmethod

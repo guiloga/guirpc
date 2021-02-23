@@ -4,7 +4,8 @@ import os
 from typing import Dict
 
 import pika
-from pika.exceptions import ConnectionWrongStateError
+from pika.exceptions import ConnectionWrongStateError, ChannelWrongStateError,\
+    AMQPConnectionError
 
 from .providers import ProducerConfiguration
 
@@ -29,8 +30,9 @@ class ClientConnector:
 
     initialized_clients = []
 
-    def __init__(self, config_envar: str = DEFAULT_CONFIG_ENVAR):
+    def __init__(self, config_envar: str = DEFAULT_CONFIG_ENVAR, fail_silently=False):
         self._config_envar = config_envar
+        self._fail_silently = fail_silently
 
         if not self.is_initialized:
             self.reload()
@@ -60,7 +62,7 @@ class ClientConnector:
 
     @property
     def is_reload_required(self):
-        if not self._bck_con.is_open:
+        if not self._bck_con or not self._bck_con.is_open:
             return True
         return False
 
@@ -72,8 +74,17 @@ class ClientConnector:
         config = get_producer_config(self._config_envar)
         ClientConnector.CONFIG.update(
             {self.client_id: config})
+
+        try:
+            bck_con = self.open_bck_con(config.con_params.amqp_url)
+        except AMQPConnectionError as err:
+            if self._fail_silently:
+                bck_con = None
+            else:
+                raise err
+
         ClientConnector.BCK_CON.update(
-            {self.client_id: self.open_bck_con(config.con_params.amqp_url)})
+            {self.client_id: bck_con})
 
         self._set_attributes()
 
@@ -81,9 +92,10 @@ class ClientConnector:
     def close_all_connections(cls):
         for id_, con in cls.BCK_CON.items():
             try:
-                con.close()
-            except ConnectionWrongStateError:
-                pass
+                if con.is_open:
+                    con.close()
+            except (ConnectionWrongStateError, ChannelWrongStateError):
+                cls.close_all_connections()
 
     @classmethod
     def restore(cls):

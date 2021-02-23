@@ -18,7 +18,7 @@ class ConsumerConfiguration(AppConfigMixin):
             verbose_name=config_data['server']['verbose_name'],
             root=config_data['server']['root'],
             broker_connection=BrokerConnectionParams.create(
-                config_data['server.connection']),
+                config_data.get('server.connection')),
             amqp_entities=AMQPEntities.create(
                 config_data['server.amqp_entities']),
             options=ServerOptions.create(
@@ -44,7 +44,7 @@ class ProducerConfiguration(AppConfigMixin):
             root=config_data['client']['root'],
             producer_application_id=config_data['client']['producer_application_id'],
             broker_connection=BrokerConnectionParams.create(
-                config_data['client.connection']),
+                config_data.get('client.connection')),
             amqp_entities=AMQPEntities.create(
                 config_data['client.amqp_entities']),
             options=ClientOptions.create(

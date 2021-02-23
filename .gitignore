@@ -123,3 +123,5 @@ guirpc/foobar.ini
 foobar*
 test_config.ini
 test_source/
+foobar.ini
+foobar_client.ini
