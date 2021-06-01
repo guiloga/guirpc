@@ -125,3 +125,5 @@ test_config.ini
 test_source/
 foobar.ini
 foobar_client.ini
+run.sh
+notes.txt
