@@ -5,6 +5,7 @@ from shutil import copytree, rmtree, ignore_patterns
 
 from . import read_config_defaults
 
+
 FIXTURES_DIR = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'fixtures')
 
@@ -20,6 +21,7 @@ host = {host}
 port = {port}
 user = {user}
 password = {password}
+virtual_host = {vhost}
 
 [server.amqp_entities]
 exchange = {exchange}
@@ -42,6 +44,7 @@ host = {host}
 port = {port}
 user = {user}
 password = {password}
+virtual_host = {vhost}
 
 [client.amqp_entities]
 exchange = {exchange}
@@ -65,6 +68,7 @@ def initproducer(work_dir, app_name, **options):
 def createconfig(name, **options):
     client_flag = options.get('client', False)
     out_dir = options.get('out_dir', '')
+    url = options.get('connect')
     print("Creating {0} config INI named '{1}.ini'..".format(
         'client' if client_flag else 'server',
         name))
@@ -74,13 +78,18 @@ def createconfig(name, **options):
             values = {**CONFIG_DEFAULTS['producer_config']['globals'],
                       **CONFIG_DEFAULTS['producer_config']['amqp_entities'],
                       **CONFIG_DEFAULTS['producer_config']['options']}
-            _create_config_file(name, PRODUCER_INI, values, out_dir)
+            config_ini = PRODUCER_INI
         else:
             values = {**CONFIG_DEFAULTS['consumer_config']['amqp_entities'],
                       **CONFIG_DEFAULTS['consumer_config']['options']}
-            _create_config_file(name, CONSUMER_INI, values, out_dir)
+            config_ini = CONSUMER_INI
     except Exception as error:
         print(f"An error occurred: '{error.__class__.__name__} -> {error}'")
+
+    if url:
+        values['connect'] = url
+
+    _create_config_file(name, config_ini, values, out_dir)
 
 
 def _init_cmd_handler(fixture, work_dir, app_name, config_ini, options):
@@ -102,16 +111,16 @@ def _init_cmd_handler(fixture, work_dir, app_name, config_ini, options):
 
 
 def _create_config_file(name: str, config_ini: str, format_values: dict, out_dir: str = ''):
-    url = format_values.pop('connect',
-                            'guest:guest@localhost:5672')
-    splitted_url = url.split('@')
-    user, password = splitted_url[0].split(':')
-    host, port = splitted_url[1].split(':')
-    format_values.update({'user': user,
-                          'password': password,
-                          'host': host,
-                          'port': port})
-
+    url = format_values.get('connect')
+    if url:
+        user, password, host, port, vhost = _parse_amqp_uri(url)
+        format_values.update({'user': user,
+                            'password': password,
+                            'host': host,
+                            'port': port,
+                            'vhost': vhost})
+    else:
+        config_ini = _cut_connection_from_config_ini(config_ini)
     config = configparser.ConfigParser(allow_no_value=True)
     config.read_string(
         config_ini.format(app_name=name, **format_values))
@@ -122,3 +131,29 @@ def _create_config_file(name: str, config_ini: str, format_values: dict, out_dir
             config.write(configfile)
     else:
         print(f"Error: file '{filename}' already exists.")
+
+
+def _cut_connection_from_config_ini(config_ini: str):
+    config_ini = config_ini.replace(
+        "\n[server.connection]", "")
+    config_ini = config_ini.replace(
+        "\n[client.connection]", "")
+
+    config_ini = config_ini.replace(
+        "\nhost = {host}\nport = {port}\n"
+        "user = {user}\npassword = {password}\n"
+        "virtual_host = {vhost}\n", "")
+
+    return config_ini.rstrip()
+
+
+def _parse_amqp_uri(uri):
+    try:
+        sp_url = uri.split('@')
+        p1 = sp_url[0].replace('amqp://', '').split(':')
+        p2 = sp_url[-1].split('/') if len(sp_url) > 1 else '%2F'
+        p3 = p2[0].split(':')
+    except Exception:
+        raise Exception("Invalid connection uri: '%s'", uri)
+
+    return [*p3, *p1, p2[-1]]
