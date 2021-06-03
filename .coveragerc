@@ -1,0 +1,2 @@
+[run]
+omit = guirpc/amqp/consumer.py
