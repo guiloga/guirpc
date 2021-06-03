@@ -5,9 +5,9 @@
 ____
 [![Build Status](https://www.travis-ci.com/guiloga/guirpc.svg?branch=master)](https://www.travis-ci.com/guiloga/guirpc)
 
-| Is a **Python** RPC package to build and run FaaS-like application service.
-| It facilitates the creation of an consumer or a producer, as well as an abstraction layer for the transmission
-  of messages over a connected message broker server.
+Is a **Python** RPC package to build and run FaaS-like application service.
+It facilitates the creation of an consumer or a producer, as well as an abstraction layer
+for the transmission of messages over a connected message broker server.
 
 It provides an abstraction layer with some decorators, encoders, serializers and in short all the surrounded layers 
 for easily build, configure and run an **RPC server** as it makes up as a **FaaS-like application**.
@@ -31,7 +31,7 @@ Documentation of this project is created with [Sphinx](https://www.sphinx-doc.or
 run:
 
 ```shell script
-pip install -U docs/requirements.txt
+pip install -r docs/requirements.txt
 sphinx-build -b html docs/source/ docs/build/
 ```
 

@@ -38,7 +38,7 @@ def run_consumer(with_config, **options):
 @click.option('-p', '--prefetch-count', type=int, help='the QOS prefetch count.', default=1)
 @click.option('-U', '--connect',
               help='the RabbitMQ server url to connect to "user:password@host:port".',
-              default='guest:guest@localhost:5672')
+              default='')
 def init_consumer(app_name, **options):
     """Starts an RPC server/consumer application."""
     initconsumer(WORKING_DIR, app_name, **options)
@@ -51,8 +51,8 @@ def init_consumer(app_name, **options):
 @click.option('-r', '--routing-key', help='the routing key.', default='my_queue')
 @click.option('-C', '--consumer', help='the response consumer.', default='')
 @click.option('-U', '--connect',
-              help='the RabbitMQ server url to connect to "user:password@host:port".',
-              default='guest:guest@localhost:5672')
+              help='the RabbitMQ server url to connect to "user:password@host:port/vhost".',
+              default='')
 def init_producer(app_name, **options):
     """Starts an RPC client/consumer application."""
     initproducer(WORKING_DIR, app_name, **options)
@@ -63,6 +63,9 @@ def init_producer(app_name, **options):
 @click.option('--client', is_flag=True,
               help='With this flag it generates a client configuration file. Defaults server.')
 @click.option('-o', '--out-dir', help='the target directory.', default='')
+@click.option('-U', '--connect',
+              help='the RabbitMQ server url to connect to "user:password@host:port/vhost".',
+              default='')
 def create_config(name, **options):
     """Creates a server or client INI configuration file with default values."""
     createconfig(name, **options)

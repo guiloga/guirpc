@@ -76,3 +76,13 @@ Transport layers
 
 .. toctree::
    :maxdepth: 1
+
+- **v0.2 - June 1, 2021**
+   - Fixed connection_is_open decorator and added AMQP_URI variable. `b680b7e`_
+   - Fixed StreamLostError on Producer creation. `498723e`_
+
+.. _b680b7e: https://github.com/guiloga/guirpc/commit/b680b7e0247aed8ef93438b316f7cc2dc9a5e0e4
+.. _498723e: https://github.com/guiloga/guirpc/commit/498723e07ba855bd21c8382c3bf2afffca7045aa
+
+- **v0.1 - February 5, 2021**
+   - Initial realease.
