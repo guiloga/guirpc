@@ -77,7 +77,7 @@ Transport layers
 .. toctree::
    :maxdepth: 1
 
-- **v0.2 - June 1, 2021**
+- **(under development) v0.2 - Upcomming in June, 2021**
    - Fixed connection_is_open decorator and added AMQP_URI variable. `b680b7e`_
    - Fixed StreamLostError on Producer creation. `498723e`_
 
