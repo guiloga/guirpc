@@ -46,7 +46,8 @@ def find_registered_faas(app_file):
     registered_faas = dict()
 
     if not err:
-        attr_names = [item for item in FaaS_MODULE.__dict__ if item[:2] != '__']
+        attr_names = [
+            item for item in FaaS_MODULE.__dict__ if item[:2] != '__']
         for name in attr_names:
             attr_ = getattr(FaaS_MODULE, name)
             try:
@@ -91,6 +92,10 @@ def runconsumer(with_config, **options):
         logger.info('*' * 16 + f' {cs_conf.verbose_name} ' + '*' * 16)
         for name in callables.keys():
             logger.info('#' * 3 + ' registered FaaS: %s' % name)
+
+        logger.info('Options (throughput): max_workers=%s; prefetch_count=%s;' %
+                    (consumer.max_workers, consumer.prefetch_count))
         consumer.run()
     else:
-        logger.info(f'An error occurred while loading consumer application: {err}')
+        logger.info(
+            f'An error occurred while loading consumer application: {err}')

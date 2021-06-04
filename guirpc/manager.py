@@ -36,6 +36,8 @@ def run_consumer(with_config, **options):
 @click.option('-q', '--queue', help='the queue name.', default='my_queue')
 @click.option('-r', '--routing-key', help='the routing key.', default='my_queue')
 @click.option('-p', '--prefetch-count', type=int, help='the QOS prefetch count.', default=1)
+@click.option('-w', '--max_workers', type=int, help='Maximum number of workers/threads.'
+              '(each worker can handle 1 message at a time)', default=4)
 @click.option('-U', '--connect',
               help='the RabbitMQ server url to connect to "user:password@host:port".',
               default='')

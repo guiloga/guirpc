@@ -29,7 +29,7 @@ class BrokerConnectionParams:
                 raise AMQPConnectionURINotSetError()
             values = [object_data.get('host'), object_data.get('port'),
                       object_data.get('user'), object_data.get('password'),
-                      object_data.get('vhost', '%2F'),]
+                      object_data.get('vhost', '%2F'), ]
 
         return cls(*values)
 
@@ -63,7 +63,8 @@ class AMQPEntities:
 
 
 class ServerOptions:
-    def __init__(self, prefetch_count: int = 1):
+    def __init__(self, max_workers: int = 4, prefetch_count: int = 1):
+        self.max_workers = max_workers
         self.prefetch_count = prefetch_count
 
     @classmethod
@@ -75,12 +76,14 @@ class ServerOptions:
         :rtype: ServerOptions
         """
         return cls(
+            max_workers=int(object_data.get('max_workers', 4)),
             prefetch_count=int(object_data.get('prefetch_count', 1)),
         )
 
     @property
     def as_dict(self):
         return dict(
+            max_workers=self.max_workers,
             prefetch_count=self.prefetch_count,
         )
 

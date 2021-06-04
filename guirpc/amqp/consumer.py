@@ -1,5 +1,7 @@
 import functools
 import logging
+from threading import Thread
+from queue import Queue
 import time
 from typing import Dict, Callable
 
@@ -27,9 +29,16 @@ class Consumer(ConsumerInterface):
     commands that were issued and that should surface in the output as well.
     """
 
-    def __init__(self, faas_callables: Dict[str, Callable], *args, **kwargs):
+    def __init__(self,
+                 faas_callables: Dict[str, Callable],
+                 *args,
+                 **kwargs):
         super(Consumer, self).__init__(*args, **kwargs)
         self._faas_callables = faas_callables
+        self._queue = Queue(self.max_workers)
+        self._init_state()
+
+    def _init_state(self):
         self._connection = None
         self._channel = None
         self._closing = False
@@ -47,7 +56,8 @@ class Consumer(ConsumerInterface):
 
     def connect(self):
         passw = self.amqp_url.split('@')[0].split(':')[-1]
-        LOGGER.info('Connecting to %s', self.amqp_url.replace(':%s' % passw, ':' + '*' * 8))
+        LOGGER.info('Connecting to %s', self.amqp_url.replace(
+            ':%s' % passw, ':' + '*' * 8))
 
         return pika.SelectConnection(
             parameters=pika.URLParameters(self.amqp_url),
@@ -76,7 +86,8 @@ class Consumer(ConsumerInterface):
         if self._closing:
             self._connection.ioloop.stop()
         else:
-            LOGGER.warning('Connection closed, reconnect necessary: %s', reason)
+            LOGGER.warning(
+                'Connection closed, reconnect necessary: %s', reason)
             self.reconnect()
 
     def reconnect(self):
@@ -162,11 +173,20 @@ class Consumer(ConsumerInterface):
             self._channel.close()
 
     def on_message(self, _ch, basic_deliver, properties, body):
-        # TODO: Threading/Multiprocessing
+        """Handles message multi-threading."""
+        # if the queue size is reached, it blocks until a free slot is available
+        self._queue.put(basic_deliver.delivery_tag, block=True)
+        th = Thread(target=self.process_message,
+                    args=(_ch, basic_deliver, properties, body))
+        th.start()
+
+    def process_message(self, _ch, basic_deliver, properties, body):
+        tag = basic_deliver.delivery_tag
         faas_name = properties.headers.get('FaaS-Name')
-        LOGGER.info(f"Received message -> requests FaaS: {faas_name} [delivery_tag=#%s | corr_id='%s' | app_id='%s']",
-                    basic_deliver.delivery_tag, properties.correlation_id, properties.app_id)
-        self.acknowledge_message(basic_deliver.delivery_tag)
+        self.acknowledge_message(tag)
+        LOGGER.info(f"#{tag} Received message -> requests FaaS: {faas_name} "
+                    "[corr_id='%s' app_id='%s']" %
+                    (properties.correlation_id, properties.app_id, ))
 
         if not faas_name in self.faas_callables.keys():
             is_err, status, err_msg = (
@@ -199,11 +219,17 @@ class Consumer(ConsumerInterface):
                               headers=x_resp.message_headers,
                               correlation_id=properties.correlation_id),
                           body=x_resp.bytes)
-        LOGGER.info("Reply published with routing_key='%s'" % properties.reply_to)
+
+        LOGGER.info(f"#{tag} Reply published -> response FaaS: {faas_name} "
+                    "[routing_key='%s']" % properties.reply_to)
+
+        # get() fetches a task and removes it from the queue and a subsequent
+        # task_done() call tells the queue that the task has been processed.
+        self._queue.get(tag)
+        self._queue.task_done()
 
     def acknowledge_message(self, delivery_tag):
         self._channel.basic_ack(delivery_tag)
-        LOGGER.info('Acknowledged message #%s', delivery_tag)
 
     def stop_consuming(self):
         if self._channel:
@@ -265,13 +291,15 @@ class ProxyReconnectConsumer(ConsumerInterface):
         if self._consumer.should_reconnect:
             self._consumer.stop()
             self._update_reconnect_delay()
-            LOGGER.info('Reconnecting attempt after %d seconds', self._reconnect_delay)
+            LOGGER.info('Reconnecting attempt after %d seconds',
+                        self._reconnect_delay)
             time.sleep(self._reconnect_delay)
             self._consumer = self._create_new_consumer()
 
     def _update_reconnect_delay(self):
         self._reconnect_delay += max(1, self._reconnect_delay // 0.67)
-        self._reconnect_delay = min(self._reconnect_delay, self.MAX_RECONNECT_DELAY)
+        self._reconnect_delay = min(
+            self._reconnect_delay, self.MAX_RECONNECT_DELAY)
 
     def _create_new_consumer(self):
         return Consumer(self._consumer.faas_callables,

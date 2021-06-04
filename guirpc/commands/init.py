@@ -30,6 +30,7 @@ queue = {queue}
 routing_key = {routing_key}
 
 [server.options]
+max_workers = {max_workers}
 prefetch_count = {prefetch_count}
 """
 
@@ -115,10 +116,10 @@ def _create_config_file(name: str, config_ini: str, format_values: dict, out_dir
     if url:
         host, port, user, password, vhost = _parse_amqp_uri(url)
         format_values.update({'user': user,
-                            'password': password,
-                            'host': host,
-                            'port': port,
-                            'vhost': vhost})
+                              'password': password,
+                              'host': host,
+                              'port': port,
+                              'vhost': vhost})
     else:
         config_ini = _cut_connection_from_config_ini(config_ini)
     config = configparser.ConfigParser(allow_no_value=True)

@@ -23,14 +23,24 @@ def channel_is_open(func):
 
 
 class ConsumerInterface(AMQPMixin, ABC):
-    def __init__(self, amqp_url: str, prefetch_count: int = 1, *args, **kwargs):
+    def __init__(self,
+                 amqp_url: str,
+                 max_workers: int = 4,
+                 prefetch_count: int = 1,
+                 *args,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self._amqp_url = amqp_url
+        self._max_workers = max_workers
         self._prefetch_count = prefetch_count
 
     @property
     def amqp_url(self):
         return self._amqp_url
+
+    @property
+    def max_workers(self):
+        return self._max_workers
 
     @property
     def prefetch_count(self):

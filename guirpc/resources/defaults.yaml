@@ -5,6 +5,7 @@ consumer_config:
     queue: my_queue
     routing_key: my_queue
   options:
+    max_workers: 4
     prefetch_count: 1
 
 producer_config:
