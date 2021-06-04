@@ -10,10 +10,9 @@ for testing purposes of the guirpc package."
 ENV ROOT_DIR=/root
 ENV PACKAGE_NAME=guirpc
 ENV CMD_MANAGER=$ROOT_DIR/$PACKAGE_NAME/manager.py
-ENV CONSUMER_CONFIG_FILEPATH="foobar.ini"
-ENV PRODUCER_CONFIG_FILEPATH="foobar_client.ini"
-ENV RABBITMQ_URL="guest:guest@rabbitmq:5672"
-ENV AMQP_URI="amqp://guest:guest@rabbitmq:5672/%2F"
+ENV CONSUMER_CONFIG="foobar.ini"
+ENV PRODUCER_CONFIG="foobar_client.ini"
+ENV RABBITMQ_URL="amqp://guest:guest@rabbitmq:5672/%2F"
 ENV PYTHONPATH="${PYTHONPATH}:$ROOT_DIR"
 
 # Commnands

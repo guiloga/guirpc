@@ -21,9 +21,9 @@ cli_manager = click.CommandCollection(
 
 @amqp_manager.command('runconsumer')
 @click.option('-c', '--with-config',
-              envvar='CONSUMER_CONFIG_FILEPATH',
+              envvar='CONSUMER_CONFIG',
               help='the .ini configuration file path to run the consumer. '
-                   'Default value gets CONSUMER_CONFIG_FILEPATH environment variable.')
+                   'Default value gets CONSUMER_CONFIG environment variable.')
 def run_consumer(with_config, **options):
     """Run an RPC server/consumer."""
     runconsumer(with_config, **options)

@@ -9,7 +9,7 @@ from pika.exceptions import ConnectionWrongStateError, ChannelWrongStateError,\
 
 from .providers import ProducerConfiguration
 
-DEFAULT_CONFIG_ENVAR = 'PRODUCER_CONFIG_FILEPATH'
+DEFAULT_CONFIG_ENVAR = 'PRODUCER_CONFIG'
 
 
 def get_producer_config(envar: str = DEFAULT_CONFIG_ENVAR) -> ProducerConfiguration:

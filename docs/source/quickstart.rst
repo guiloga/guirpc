@@ -117,18 +117,19 @@ Preliminary notes
   we have not modified or added any extra settings so the default connection URI is: **guest:guest@localhost:5672**.
 
 .. note:: Alternatively to avoid declaring the connection parameters in the configuration file,
-          the connection uri can be globally set by the **RABBITMQ_CONNECTION_URI** environment variable.
+          the connection uri can be globally set by the **AMQP_URI** environment variable.
+          (i.e AMQP_URI="amqp/guest:guest@localhost:5672/%2F")
 
 Configure and Run the **Server Consumer**
 -----------------------------------------
-| Ensure that the environment variable **CONSUMER_CONFIG_FILEPATH** is set and
+| Ensure that the environment variable **CONSUMER_CONFIG** is set and
   points to the path of he *foobar.ini* file.
 
 | Export it directly in the current bash or within the ~/.bashrc file:
 
 ::
 
-    echo "export CONSUMER_CONFIG_FILEPATH=<path-to-foobar.ini>" >> ~/.bashrc
+    echo "export CONSUMER_CONFIG=<path-to-foobar.ini>" >> ~/.bashrc
 
 | Run a worker instance of the consumer with the established configuration:
 
@@ -138,19 +139,19 @@ Configure and Run the **Server Consumer**
 
 Configure the **Client Stub**
 -----------------------------
-| Ensure that the environment variable **PRODUCER_CONFIG_FILEPATH** is set and
+| Ensure that the environment variable **PRODUCER_CONFIG** is set and
   points to the path of the *foobar_client.ini* file.
 
 | Export it directly in the current bash or within the ~/.bashrc file:
 
 ::
 
-    echo "export PRODUCER_CONFIG_FILEPATH=<path-to-foobar_client.ini>" >> ~/.bashrc
+    echo "export PRODUCER_CONFIG=<path-to-foobar_client.ini>" >> ~/.bashrc
 
 
 .. note:: The **guirpc.amqp.utils.ClientConnector** class accepts an argument that is the name of
           the environment variable that points the the .ini configuration file.
-          The default variable name is **PRODUCER_CONFIG_FILEPATH**.
+          The default variable name is **PRODUCER_CONFIG**.
 
 Let's put it all together
 -------------------------

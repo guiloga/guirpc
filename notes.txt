@@ -1,14 +1,7 @@
 Version 0.2
 -----------
 TASK
-Eliminar server.connection y client.connection de las configuraciones iniciales
-de consumidor y productor (por defecto).
-Crear un nuevo argumento en el commandos createconfig, initconsumer y initproducer 
-indicando si se quiere generar la configuracion con los parametros de conexión o no.
-
-
-TASK
-Modificar las variables de entorno CONSUMER_CONFIG_FILEPATH y PRODUCER_CONFIG_FILEPATH
+Modificar las variables de entorno CONSUMER_CONFIG y PRODUCER_CONFIG
 por CONSUMER_CONFIG y PRODUCER_CONFIG.
 
 

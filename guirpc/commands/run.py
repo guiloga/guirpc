@@ -61,7 +61,7 @@ def find_registered_faas(app_file):
 class ConfigININotProvidedError(Exception):
     def __str__(self):
         return 'The .ini configuration file has not been provided. ' \
-               'Set CONSUMER_CONFIG_FILEPATH environment variable ' \
+               'Set CONSUMER_CONFIG environment variable ' \
                'or provide it using the "--with-config" option.'
 
 
