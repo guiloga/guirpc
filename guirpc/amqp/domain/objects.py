@@ -179,9 +179,11 @@ def _parse_amqp_uri(uri):
     try:
         sp_url = uri.split('@')
         p1 = sp_url[0].replace('amqp://', '').split(':')
-        p2 = sp_url[-1].split('/') if len(sp_url) > 1 else '%2F'
+        p2 = sp_url[-1].split('/')
+        if len(p2) == 1:
+            p2 += ['']
         p3 = p2[0].split(':')
     except Exception:
         raise InvalidAMQPConnectionURI(uri)
 
-    return [*p3, *p1, p2[-1]]
+    return [*p3, *p1, p2[-1] or '%2F']

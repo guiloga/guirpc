@@ -12,7 +12,7 @@ ENV PACKAGE_NAME=guirpc
 ENV CMD_MANAGER=$ROOT_DIR/$PACKAGE_NAME/manager.py
 ENV CONSUMER_CONFIG="foobar.ini"
 ENV PRODUCER_CONFIG="foobar_client.ini"
-ENV RABBITMQ_URL="amqp://guest:guest@rabbitmq:5672/%2F"
+ENV RABBITMQ_URL="amqp://guest:guest@rabbitmq:5672/"
 ENV PYTHONPATH="${PYTHONPATH}:$ROOT_DIR"
 
 # Commnands

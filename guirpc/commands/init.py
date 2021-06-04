@@ -113,7 +113,7 @@ def _init_cmd_handler(fixture, work_dir, app_name, config_ini, options):
 def _create_config_file(name: str, config_ini: str, format_values: dict, out_dir: str = ''):
     url = format_values.get('connect')
     if url:
-        user, password, host, port, vhost = _parse_amqp_uri(url)
+        host, port, user, password, vhost = _parse_amqp_uri(url)
         format_values.update({'user': user,
                             'password': password,
                             'host': host,
@@ -151,9 +151,11 @@ def _parse_amqp_uri(uri):
     try:
         sp_url = uri.split('@')
         p1 = sp_url[0].replace('amqp://', '').split(':')
-        p2 = sp_url[-1].split('/') if len(sp_url) > 1 else '%2F'
+        p2 = sp_url[-1].split('/')
+        if len(p2) == 1:
+            p2 += ['']
         p3 = p2[0].split(':')
     except Exception:
         raise Exception("Invalid connection uri: '%s'", uri)
 
-    return [*p3, *p1, p2[-1]]
+    return [*p3, *p1, p2[-1] if p2[-1] and p2[-1] != '%2F' else '/']
