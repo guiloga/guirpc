@@ -8,8 +8,8 @@ services:
       - "15672:15672"
   consumer:
     build:
-      context: .
-      dockerfile: docker/Dockerfile
+      context: ..
+      dockerfile: Dockerfile
     image: guiloga/foobar_consumer
     container_name: foobar_consumer
     environment:

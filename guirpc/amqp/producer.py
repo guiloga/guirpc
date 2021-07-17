@@ -28,15 +28,16 @@ class Producer(ProducerInterface):
         return self._response
 
     def _set_channel_consume(self):
-        _dq = self.channel.queue_declare(queue=self.amqp_entities.queue,
-                                         exclusive=True,
-                                         auto_delete=True)
+        _dq = self.channel.queue_declare(
+            queue=self.amqp_entities.queue, exclusive=True, auto_delete=True
+        )
         self._response_queue = _dq.method.queue
 
         self.channel.basic_consume(
             queue=self._response_queue,
             on_message_callback=self._handle_response,
-            auto_ack=True)
+            auto_ack=True,
+        )
 
     def _handle_response(self, ch, method, props, body):
         if self._corr_id == props.correlation_id:
@@ -59,7 +60,8 @@ class Producer(ProducerInterface):
                 app_id=request.app_id,
                 delivery_mode=2,
             ),
-            body=request.bytes)
+            body=request.bytes,
+        )
 
         while not self.response:
             self.connection.process_data_events()
@@ -67,19 +69,18 @@ class Producer(ProducerInterface):
         return self.response
 
     def set_x_response(self, body, props):
-        status = props.headers.get('Response-Status')
-        sz_name = props.headers.get('Response-Serializer')
+        status = props.headers.get("Response-Status")
+        sz_name = props.headers.get("Response-Serializer")
 
         sz = import_serializer(sz_name)
         decoded_body = BytesEncoder.decode(body)
 
         object_, error_message = (None, None)
         if sz is not BinarySerializer:
-            msg_str = StringEncoder.decode(decoded_body,
-                                           codec=sz.ENCODING)
+            msg_str = StringEncoder.decode(decoded_body, codec=sz.ENCODING)
 
             st_str = str(status)
-            if st_str[:1] in ['5', '4']:
+            if st_str[:1] in ["5", "4"]:
                 error_message = TextSerializer.deserialize(msg_str)
             else:
                 object_ = sz.deserialize(msg_str)
@@ -87,9 +88,11 @@ class Producer(ProducerInterface):
             object_ = pickle.loads(decoded_body)
 
         x_resp = ProxyResponse(status, object_, error_message=error_message)
-        x_resp.set_properties(bytes_=body,
-                              encoding=props.content_encoding,
-                              content_type=props.content_type,
-                              message_headers=props.headers)
+        x_resp.set_properties(
+            bytes_=body,
+            encoding=props.content_encoding,
+            content_type=props.content_type,
+            message_headers=props.headers,
+        )
 
         self._response = x_resp

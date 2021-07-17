@@ -3,7 +3,7 @@ from pytest import fixture
 from guirpc.amqp.utils import ClientConnector
 
 
-@fixture(scope='session')
+@fixture(scope="session")
 def connector():
     return ClientConnector()
 
@@ -15,8 +15,8 @@ def raw_obj():
 
 class Foo:
     def __init__(self):
-        self.name = 'Foo'
-        self.likes = 'Bars'
+        self.name = "Foo"
+        self.likes = "Bars"
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__

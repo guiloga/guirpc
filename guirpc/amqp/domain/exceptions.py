@@ -1,11 +1,11 @@
 class ConsumerConfigurationError(Exception):
     def __str__(self):
-        return 'An error occurred while trying to read consumer configuration.'
+        return "An error occurred while trying to read consumer configuration."
 
 
 class AMQPConnectionURINotSetError(Exception):
     def __str__(self):
-        return 'The AMQP_URI environment variable is not set.'
+        return "The AMQP_URI environment variable is not set."
 
 
 class SerializationError(Exception):
@@ -15,11 +15,17 @@ class SerializationError(Exception):
         self.error = error
 
     def __str__(self):
-        return ('An error occurred while serializing object ' +
-                '({0}) "{1}" with serializer: {2}\n'.format(type(self.object),
-                                                            self.object,
-                                                            self.sz) +
-                f'*** {self.error.__class__.__name__} ***\n{self.error}')
+        return (
+            "An error occurred while serializing object "
+            '({0}) "{1}" with serializer: {2}\n*** '
+            "{3} ***\n{4}".format(
+                type(self.object),
+                self.object,
+                self.sz,
+                self.error.__class__.__name__,
+                self.error,
+            )
+        )
 
 
 class OpeningChannelError(Exception):
@@ -27,8 +33,11 @@ class OpeningChannelError(Exception):
         self.con = con
 
     def __str__(self):
-        return ('Broker connection is not open when trying to open a new channel; '
-                f'connection details are: {self.con.__dict__ if self.con else None}')
+        return (
+            "Broker connection is not open when trying to open a new channel; "
+            "connection details are: "
+            f"{self.con.__dict__ if self.con else None}"
+        )
 
 
 class InvalidAMQPConnectionURI(Exception):
@@ -36,4 +45,4 @@ class InvalidAMQPConnectionURI(Exception):
         self.uri = uri
 
     def __str__(self):
-        return f'An error occurred while parsing AMQP URI: {self.uri}'
+        return f"An error occurred while parsing AMQP URI: {self.uri}"

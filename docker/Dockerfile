@@ -12,7 +12,7 @@ ENV PACKAGE_NAME=guirpc
 ENV CMD_MANAGER=$ROOT_DIR/$PACKAGE_NAME/manager.py
 ENV CONSUMER_CONFIG="foobar.ini"
 ENV PRODUCER_CONFIG="foobar_client.ini"
-ENV RABBITMQ_URL="amqp://guest:guest@rabbitmq:5672/"
+ENV AMQP_URI="amqp://guest:guest@rabbitmq:5672/"
 ENV PYTHONPATH="${PYTHONPATH}:$ROOT_DIR"
 
 # Commnands
@@ -28,8 +28,8 @@ RUN pip install --upgrade -U pip && \
 
 COPY . $ROOT_DIR
 
-RUN python $CMD_MANAGER initconsumer --connect $RABBITMQ_URL foobar
-RUN python $CMD_MANAGER initproducer --connect $RABBITMQ_URL foobar_client
+RUN python $CMD_MANAGER initconsumer foobar
+RUN python $CMD_MANAGER initproducer foobar_client
 
 ADD ./docker/start_consumer.sh /opt/
 

@@ -1,18 +1,22 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import TypeVar, Callable
 
 from .exceptions import OpeningChannelError
 from .mixins import AMQPMixin
 from .objects import ProxyObject
 
-BlockingConnection = TypeVar('BlockingConnection')
-Channel = TypeVar('Channel')
+BlockingConnection = TypeVar("BlockingConnection")
+Channel = TypeVar("Channel")
 
 
-def channel_is_open(func):
+def channel_is_open(func) -> Callable:
     """
     Checks if he Producer channel is opened, else opens a new one.
+
+    func (Callable): wrapped function.
+    returns (Callable): the decorated function.
     """
+
     def wrapper(ins):
         if not ins.channel.is_open:
             new_ch = ins.open_new_channel()
@@ -23,12 +27,14 @@ def channel_is_open(func):
 
 
 class ConsumerInterface(AMQPMixin, ABC):
-    def __init__(self,
-                 amqp_url: str,
-                 max_workers: int = 4,
-                 prefetch_count: int = 1,
-                 *args,
-                 **kwargs):
+    def __init__(
+        self,
+        amqp_url: str,
+        max_workers: int = 4,
+        prefetch_count: int = 1,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self._amqp_url = amqp_url
         self._max_workers = max_workers
@@ -48,9 +54,6 @@ class ConsumerInterface(AMQPMixin, ABC):
 
     @abstractmethod
     def run(self):
-        """
-        Will start the RPC server consuming.
-        """
         pass
 
 
@@ -66,7 +69,7 @@ class ProducerInterface(AMQPMixin, ABC):
     def __del__(self):
         try:
             self.channel.close()
-        except:
+        except Exception:
             pass
 
     @property
@@ -90,9 +93,6 @@ class ProducerInterface(AMQPMixin, ABC):
     @abstractmethod
     @channel_is_open
     def publish(self, x_request: ProxyObject) -> ProxyObject:
-        """
-        Will publish an RPC call to server.
-        """
         pass
 
 

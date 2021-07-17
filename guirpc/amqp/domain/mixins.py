@@ -2,8 +2,7 @@ import configparser
 
 
 class AMQPMixin:
-    def __init__(self,
-                 amqp_entities):
+    def __init__(self, amqp_entities):
         self._amqp_entities = amqp_entities
 
     @property
@@ -12,7 +11,9 @@ class AMQPMixin:
 
 
 class AppConfigMixin:
-    def __init__(self, verbose_name, root, broker_connection, amqp_entities, options):
+    def __init__(
+        self, verbose_name, root, broker_connection, amqp_entities, options
+    ):
         self.verbose_name = verbose_name
         self.root = root
         self.con_params = broker_connection
@@ -45,8 +46,13 @@ class MessagePropertiesMixin:
         self._content_type = None
         self._message_headers = None
 
-    def set_properties(self, bytes_: bytes, encoding: str, content_type: str,
-                       message_headers: dict):
+    def set_properties(
+        self,
+        bytes_: bytes,
+        encoding: str,
+        content_type: str,
+        message_headers: dict,
+    ):
         self._bytes = bytes_
         self._encoding = encoding
         self._content_type = content_type

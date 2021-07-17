@@ -4,8 +4,8 @@ from .domain.contracts import BaseSerializer
 
 
 class JsonSerializer(BaseSerializer):
-    CONTENT_TYPE = 'application/json'
-    ENCODING = 'ascii'
+    CONTENT_TYPE = "application/json"
+    ENCODING = "ascii"
 
     @classmethod
     def serialize(cls, obj: dict) -> str:
@@ -17,8 +17,8 @@ class JsonSerializer(BaseSerializer):
 
 
 class TextSerializer(BaseSerializer):
-    CONTENT_TYPE = 'text/plain'
-    ENCODING = 'ascii'
+    CONTENT_TYPE = "text/plain"
+    ENCODING = "ascii"
 
     @classmethod
     def serialize(cls, obj: str) -> str:
@@ -34,6 +34,7 @@ class BinarySerializer(BaseSerializer):
     This is a void binary serializer,
     it can be used to pass any object type within a ProxyObject.
     """
+
     CONTENT_TYPE = None
     ENCODING = None
 

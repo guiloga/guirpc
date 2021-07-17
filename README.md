@@ -6,10 +6,10 @@ ____
 [![Build Status](https://www.travis-ci.com/guiloga/guirpc.svg?branch=master)](https://www.travis-ci.com/guiloga/guirpc)
 
 Is a **Python** RPC package to build and run FaaS-like application service.
-It facilitates the creation of an consumer or a producer, as well as an abstraction layer
+It facilitates the creation of a consumer and a producer (a Pub/Sub pattern) providing an abstraction layer
 for the transmission of messages over a connected message broker server.
 
-It provides an abstraction layer with some decorators, encoders, serializers and in short all the surrounded layers 
+It includes some decorators, encoders, serializers ... and also a CLI application called **guirpc**
 for easily build, configure and run an **RPC server** as it makes up as a **FaaS-like application**.
 
 ## Built With
@@ -35,12 +35,37 @@ pip install -r docs/requirements.txt
 sphinx-build -b html docs/source/ docs/build/
 ```
 
-## Tests
+## Development
 
 Tests are built with [pytest](https://docs.pytest.org/en/stable/) and run with docker. In order tu run it be sure last
 that current stable versions of docker and docker-compose are installed.
 
-- First, build the *foobar* consumer service and run it alongside a RabbitMQ server(optionally with the management
+- First, install *requirements.txt* and development required packages:
+```shell script
+pip install -r requirement.txt
+pip install -U pytest pytest-cov flake8 black
+```
+
+- Run a local RabbitMQ server instance for development:
+```shell script
+docker-compose up -d rabbitmq
+```
+
+### Run tests
+
+#### Run tests locally
+```shell script
+guirpc initconsumer foobar && guirpc initproducer foobar_client
+export CONSUMER_CONFIG=foobar.ini
+export PRODUCER_CONFIG=foobar_client.ini
+export AMQP_URI=amqp://guest:guest@localhost:5672
+
+# Run all tests
+pytest
+```
+
+#### Run tests with Docker
+- Build the *foobar* consumer service and run it alongside a RabbitMQ server(optionally with the management
   plugin):
 
 ```shell script

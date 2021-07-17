@@ -1,6 +1,9 @@
 *.ini
 !pytest.ini
 foobar/
+foobar_client/
 .pytest_cache/
 *.pyc
 setup.py/
+guirpc.egg-info/
+.pytest_cache/

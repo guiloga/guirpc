@@ -1,1 +1,1 @@
-from .objects import ProxyRequest, ProxyResponse
+from .objects import ProxyRequest, ProxyResponse  # noqa F401
