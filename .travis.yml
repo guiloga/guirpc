@@ -27,7 +27,7 @@ jobs:
     - stage: build
       name: "Build"
       script:
-        - docker-compose build consumer
+        - docker-compose -f "docker/docker-compose.yml" build consumer
         - docker save guiloga/foobar_consumer:latest | gzip > consumer_img.tar.gz
       workspaces:
         create:
@@ -41,10 +41,10 @@ jobs:
         use: build_ws
       script:
         - docker load --input consumer_img.tar.gz
-        - docker-compose up --no-build -d rabbitmq consumer
+        - docker-compose -f "docker/docker-compose.yml" up --no-build -d rabbitmq consumer
         - sleep 1m
         - docker logs foobar_consumer
-        - docker-compose run test
+        - docker-compose -f "docker/docker-compose.yml" run test
 
     - stage: static_analysis
       name: "Static Analysis"
@@ -52,4 +52,4 @@ jobs:
         use: build_ws
       script:
         - docker load --input consumer_img.tar.gz
-        - docker-compose run static_analysis || exit 0
+        - docker-compose -f "docker/docker-compose.yml" run static_analysis || exit 0
