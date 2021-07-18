@@ -9,7 +9,7 @@ services:
   consumer:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     image: guiloga/foobar_consumer
     container_name: foobar_consumer
     environment:
