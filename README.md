@@ -1,4 +1,4 @@
-# <span style="color:#0288D1;">guirpc</span> :envelope:
+# guirpc :envelope:
 
 _A pre-release is published to PyPi, but a first proper version is still under construction_ :construction_worker:
 
