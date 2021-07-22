@@ -1,7 +1,8 @@
 # guirpc
 
-### RPC core package to build a FaaS-like application service
+_A pre-release is published to PyPi, but a first proper version is still under construction_ :construction_worker:
 
+_It is an RPC core package to build a FaaS-like application service :stuck_out_tongue_winking_eye:_
 ____
 [![Build Status](https://www.travis-ci.com/guiloga/guirpc.svg?branch=master)](https://www.travis-ci.com/guiloga/guirpc)
 
@@ -14,7 +15,7 @@ for easily build, configure and run an **RPC server** as it makes up as a **FaaS
 
 ## Built With
 
-* [RabbitMQ](https://www.rabbitmq.com/) - The message broker layer
+* 🐰 [RabbitMQ](https://www.rabbitmq.com/) - The message broker layer
 * [Pika](https://pika.readthedocs.io/en/stable/index.html) - RabbitMQ client library
 
 ## Prerequisites ###
