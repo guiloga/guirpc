@@ -1,8 +1,8 @@
-# guirpc :envelope:
+# guirpc
 
 _A pre-release is published to PyPi, but a first proper version is still under construction_ :construction_worker:
 
-_It is an RPC core package to build a FaaS-like application service :stuck_out_tongue_winking_eye:_
+_It is an RPC core package to build a FaaS-like application service_
 ____
 [![Build Status](https://www.travis-ci.com/guiloga/guirpc.svg?branch=master)](https://www.travis-ci.com/guiloga/guirpc)
 
@@ -15,7 +15,7 @@ for easily build, configure and run an **RPC server** as it makes up as a **FaaS
 
 ## Built With
 
-* 🐰 [RabbitMQ](https://www.rabbitmq.com/) - The message broker layer
+* [RabbitMQ](https://www.rabbitmq.com/) 🐰 - The message broker layer
 * [Pika](https://pika.readthedocs.io/en/stable/index.html) - RabbitMQ client library
 
 ## Prerequisites ###
@@ -31,68 +31,79 @@ official [documentation](https://guirpc.readthedocs.io/en/latest/).
 Documentation of this project is created with [Sphinx](https://www.sphinx-doc.org/en/master/index.html), to build it
 run:
 
-```shell script
-pip install -r docs/requirements.txt
-sphinx-build -b html docs/source/ docs/build/
+```bash
+$ pip install -r docs/requirements.txt
+$ sphinx-build -b html docs/source/ docs/build/
 ```
 
 ## Development
 
-Tests are built with [pytest](https://docs.pytest.org/en/stable/) and run with docker. In order tu run it be sure last
+Tests are built with [pytest](https://docs.pytest.org/en/stable/) and run with docker. In order to run it be sure last
 that current stable versions of docker and docker-compose are installed.
 
 - First, install *requirements.txt* and development required packages:
-```shell script
-pip install -r requirement.txt
-pip install -U pytest pytest-cov flake8 black
+```bash
+$ python3 -m virtualenv .venv
+$ source .venv/bin/activate
+$ pip install -r requirements.txt
+$ pip install -U pytest pytest-cov flake8 black
 ```
 
 - Run a local RabbitMQ server instance for development:
-```shell script
-docker-compose up -d rabbitmq
+```bash
+$ cd docker
+$ docker-compose up -d rabbitmq
 ```
 
 ### Run tests
 
 #### Run tests locally
-```shell script
-guirpc initconsumer foobar && guirpc initproducer foobar_client
-export CONSUMER_CONFIG=foobar.ini
-export PRODUCER_CONFIG=foobar_client.ini
-export AMQP_URI=amqp://guest:guest@localhost:5672
 
-# Run all tests
-pytest
-```
+  - Initialize a consumer, configure and run the server:
+  ```bash
+  $ guirpc initconsumer foobar
+  $ export CONSUMER_CONFIG=foobar.ini
+  $ export AMQP_URI=amqp://guest:guest@localhost:5672
+  ```
+
+  - Initialize a producer, configure and **run tests**:
+  ```bash
+  $ guirpc initproducer foobar_client
+  $ export PRODUCER_CONFIG=foobar_client.ini
+  $ export AMQP_URI=amqp://guest:guest@localhost:5672
+
+  # runs all tests
+  $ pytest
+  ```
 
 #### Run tests with Docker
 - Build the *foobar* consumer service and run it alongside a RabbitMQ server(optionally with the management
   plugin):
 
-```shell script
-docker-compose up --build -d rabbitmq consumer
+```bash
+$ docker-compose up --build -d rabbitmq consumer
 ```
 
 - Run all **unit** and **integration** tests:
 
-```shell script
-docker-compose run test
+```bash
+$ docker-compose run test
 ```
 
 Optionally, run code static analysis (with flake8):
 
-```shell script
+```bash
 docker-compose run static_analysis
 ```
 
 For development, create a link file which associates source code with your interpreter site-packages directory:
 
-```shell script
-touch setup.py
-echo "import setuptools
-setuptools.setup()" > setup.py
+```bash
+$ touch setup.py
+$ echo "import setuptools
+$ setuptools.setup()" > setup.py
 # Then do
-pip install --editable .
+$ pip install --editable .
 ```
 
 ## Resources
